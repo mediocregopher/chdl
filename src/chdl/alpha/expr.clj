@@ -2,15 +2,6 @@
   (:require [chdl.alpha.proto :as proto]
             [chdl.alpha.literal :as literal]))
 
-(proto/defalpha-item enum
-  "Given a sequence of character or raw literals, represents an enumeration of
-  those literals"
-  [items]
-    (to-str [_]
-      (let [item-strs (map proto/to-str items)
-            item-full-str (apply str (interpose "," item-strs))]
-        (str "(" item-full-str ")"))))
-
 (proto/defalpha-item space-sep
   "Given a sequence of alpha-items, represents their space-separated form"
   [items]
@@ -42,9 +33,23 @@
 
 (defn tabd [item] (prepended item "    "))
 
+(proto/defalpha-item wrapped
+  "Given an alpha-item, represents it but with the given chars/strings on either
+  side"
+  [ch1 item ch2]
+    (to-str [_]
+      (str ch1 (proto/to-str item) ch2)))
+
+(defn parend [item] (wrapped \( item \)))
+
+(proto/defalpha-item concated
+  "Given one or more alpha items, represents their forms joined with nothing
+  in-between"
+  [items]
+    (to-str [_]
+      (apply str (map proto/to-str items))))
+
 (comment
-  (def e (enum [ (literal/raw :one) (literal/raw "two") (literal/character \a)]))
-  (proto/to-str e)
   (def s (space-sep [ (literal/raw :one) (literal/raw :two) (literal/raw :three)]))
   (proto/to-str s)
   (def c (comma-sep [ (literal/raw :one) (literal/raw :two) (literal/raw :three)]))
@@ -53,9 +58,14 @@
   (proto/to-str sc)
   (def cc (commad s))
   (proto/to-str cc)
-  (def nc (newlined e))
+  (def nc (newlined c))
   (proto/to-str nc)
   (def tc (tabd s))
   (proto/to-str tc)
+  (def pc (parend c))
+  (proto/to-str pc)
+  (def tc (concated [s c (semicolond c)]))
+  (proto/to-str tc)
+
   (proto/to-str (tabd (newlined (semicolond s))))
 )
