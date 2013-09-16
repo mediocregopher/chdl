@@ -2,41 +2,38 @@
   (:require [chdl.alpha.proto :as proto]
             [chdl.alpha.literal :as literal]))
 
-(proto/defalpha-item space-sep
-  "Given a sequence of alpha-items, represents their space-separated form"
-  [items]
-    (to-str [_]
-      (apply str (interpose " " (map proto/to-str items)))))
+;; All functions in here take in literals from chdl.alpha.literal ;;
 
-
-(proto/defalpha-item comma-sep
-  "Given a sequence of alpha-items, represents their comma-separated form"
-  [items]
-    (to-str [_]
-      (apply str (interpose ", " (map proto/to-str items)))))
-
-(proto/defalpha-item concated
+(proto/defalpha-item concated-raw
   "Given one or more alpha items, represents their forms joined with nothing
   in-between"
   [items]
     (to-str [_]
       (apply str (map proto/to-str items))))
 
-(defn semicolond [item] (concated [item (literal/raw \;)]))
-(defn commad [item] (concated [item (literal/raw \,)]))
-(defn newlined [item] (concated [item (literal/raw \newline)]))
-(defn tabd [item] (concated [(literal/raw "    ") item]))
-(defn parend [item] (concated [ (literal/raw \() item (literal/raw \)) ]))
+;defalpha-item is a macro and doesn't handle & correctly, so we wrap
+;concated-raw in a defn
+(defn concated [& items] (concated-raw items))
+
+(defn semicolond [item] (concated item (literal/raw \;)))
+(defn commad [item] (concated item (literal/raw \,)))
+(defn newlined [item] (concated item (literal/raw \newline)))
+(defn tabd [item] (concated (literal/raw "    ") item))
+(defn parend [item] (concated (literal/raw \() item (literal/raw \))))
+
+(defn sepd [sep & items] (concated-raw (interpose sep items)))
+(defn space-sepd [& items] (apply sepd (literal/raw " ") items))
+(defn comma-sepd [& items] (apply sepd (literal/raw ", ") items))
 
 (comment
-  (def s (space-sep [ (literal/raw :one) (literal/raw :two) (literal/raw :three)]))
+  (def tc (concated (literal/raw :a) (literal/raw :b)))
+  (proto/to-str tc)
+
+  (def s (space-sepd (literal/raw :one) (literal/raw :two) (literal/raw :three)))
   (proto/to-str s)
 
-  (def c (comma-sep [ (literal/raw :one) (literal/raw :two) (literal/raw :three)]))
+  (def c (comma-sepd (literal/raw :one) (literal/raw :two) (literal/raw :three)))
   (proto/to-str c)
-
-  (def tc (concated [s c]))
-  (proto/to-str tc)
 
   (def sc (semicolond c))
   (proto/to-str sc)
