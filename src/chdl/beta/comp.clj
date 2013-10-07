@@ -83,6 +83,12 @@
 (def lib-load (partial lib-loaduse :LIBRARY))
 (def lib-use (partial lib-loaduse :USE))
 
+(defn concat
+  "Given one or more arrays/elements, represents the 'a & b & c ...'
+  concatanation syntax"
+  [& args]
+  (apply expr/sepd (lit/raw " & ") args))
+
 (comment [
   (proto/to-str (paren-call :func (lit/string "ohai") (lit/num2 "001")))
   (proto/to-str (downto (lit/num10 8) (lit/num2 "01")))
@@ -102,4 +108,5 @@
                       :sig2 :out :real))
   (proto/to-str (lib-load "IEEE" "HARDI"))
   (proto/to-str (lib-use "IEEE.STD_LOGIC_1164" "HARDI.Devices.All"))
+  (proto/to-str (concat (lit/bit 0) (lit/bit 1)))
 ])
