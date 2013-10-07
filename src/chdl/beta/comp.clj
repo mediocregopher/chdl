@@ -56,6 +56,15 @@
 (def constant (partial sigcon :CONSTANT))
 (def signal (partial sigcon :SIGNAL))
 
+(defn assign
+  "Given a signal id and what it should be assigned to, represents the
+  'id <= towhat' syntax"
+  [id towhat]
+  (expr/space-sepd
+    (lit/raw id)
+    (lit/raw "<=")
+    towhat))
+
 (defn port
   "Given partitions of three arguments, each set having a signal identifier, the
   direction of the signal (:in, :out, or :inout), and the signal's type,
@@ -104,6 +113,7 @@
   (proto/to-str (constant :a :REAL (lit/num10 25)))
   (proto/to-str (signal :a :REAL))
   (proto/to-str (signal :a :REAL (lit/num10 25)))
+  (proto/to-str (assign :a (lit/num2 "1001")))
   (proto/to-str (port :sig1 :in :real
                       :sig2 :out :real))
   (proto/to-str (lib-load "IEEE" "HARDI"))
