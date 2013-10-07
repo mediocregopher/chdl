@@ -1,6 +1,7 @@
 (ns chdl.alpha.expr
   (:require [chdl.alpha.proto :as proto]
-            [chdl.alpha.literal :as literal]))
+            [chdl.alpha.literal :as literal]
+            [clojure.string :as s]))
 
 ;; All functions in here take in literals from chdl.alpha.literal ;;
 
@@ -18,12 +19,19 @@
 (defn semicolond [item] (concated item (literal/raw \;)))
 (defn commad [item] (concated item (literal/raw \,)))
 (defn newlined [item] (concated item (literal/raw \newline)))
-(defn tabd [item] (concated (literal/raw "    ") item))
 (defn parend [item] (concated (literal/raw \() item (literal/raw \))))
 
 (defn sepd [sep & items] (concated-raw (interpose sep items)))
 (defn space-sepd [& items] (apply sepd (literal/raw " ") items))
 (defn comma-sepd [& items] (apply sepd (literal/raw ", ") items))
+
+(def tab "    ")
+(proto/defalpha-item tabd
+  "Given an alpha item, represents its form with one tab inserted before each
+  newline"
+  [item]
+    (to-str [_]
+      (str tab (s/replace (proto/to-str item) #"\n" (str \newline tab)))))
 
 (comment
   (def tc (concated (literal/raw :a) (literal/raw :b)))
@@ -44,7 +52,7 @@
   (def nc (newlined c))
   (proto/to-str nc)
 
-  (def tc (tabd s))
+  (def tc (tabd (concated nc nc nc)))
   (proto/to-str tc)
 
   (def pc (parend c))
