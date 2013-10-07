@@ -34,6 +34,6 @@
       (proto/to-str cc)    => "one two three,"
       (proto/to-str nc)    => "one, two, three\n"
       (proto/to-str tc)    => "    one two three"
-      (proto/to-str ttc)   => "    one, two, three\n    one, two, three\n    "
+      (proto/to-str ttc)   => "    one, two, three\n    one, two, three\n"
       (proto/to-str pc)    => "(one, two, three)"
-      (proto/to-str combo) => "    one two three;\n    ")))
+      (proto/to-str combo) => "    one two three;\n")))

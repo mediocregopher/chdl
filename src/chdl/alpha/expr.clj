@@ -31,7 +31,8 @@
   newline"
   [item]
     (to-str [_]
-      (str tab (s/replace (proto/to-str item) #"\n" (str \newline tab)))))
+      (str tab (s/replace (proto/to-str item) #"\n."
+        #(str \newline tab (second %1))))))
 
 (comment
   (def tc (concated (literal/raw :a) (literal/raw :b)))
