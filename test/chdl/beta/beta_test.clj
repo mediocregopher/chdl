@@ -1,9 +1,14 @@
 (ns chdl.beta.beta-test
   (:require [clojure.test :refer :all]
             [midje.sweet :refer :all]
-            [chdl.alpha.literal :refer :all]
+            [chdl.alpha.literal :as lit :refer :all]
+            [chdl.beta.process :refer :all]
             [chdl.alpha.proto :as proto]
-            [chdl.beta.comp :refer :all]))
+            [chdl.beta.comp :refer :all]
+            [clojure.string :as s]))
+
+(defn clean-spaces [string]
+  (s/replace string #"\s+" " ")) 
 
 (facts "About the beta layer"
 
@@ -49,5 +54,33 @@
     (proto/to-str (lib-load "IEEE" "HARDI")) => "LIBRARY IEEE, HARDI"
 
     (proto/to-str (lib-use "IEEE.STD_LOGIC_1164" "HARDI.Devices.All")) =>
-      "USE IEEE.STD_LOGIC_1164, HARDI.Devices.All"
-))
+      "USE IEEE.STD_LOGIC_1164, HARDI.Devices.All")
+
+  (fact "A simple process statement"
+    (clean-spaces
+      (proto/to-str
+        (process {:body []})))  
+
+    => (clean-spaces "process 
+                      begin
+                      end process;")) 
+
+  (fact "A more complex process statement"
+    (clean-spaces 
+      (proto/to-str 
+        (process {:declarations [ (variable :l :line) ]
+                  :body [ 
+                         (paren-call :write (raw :l) (paren-call :String' (string "Hello world!")))
+                         (paren-call :writeline (raw :output) (raw :l))
+                         (raw :wait)]})))
+
+    => (clean-spaces 
+         "process
+             VARIABLE l : line;
+          begin
+             write(l, String'(\"Hello world!\"));
+             writeline(output, l);
+             wait;
+          end process;"))
+
+)
