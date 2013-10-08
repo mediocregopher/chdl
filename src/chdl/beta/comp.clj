@@ -1,4 +1,5 @@
 (ns chdl.beta.comp
+  "Components"
   (:require [chdl.alpha.literal :as lit]
             [chdl.alpha.expr :as expr]
             [chdl.alpha.proto :as proto]))
@@ -41,28 +42,52 @@
     (lit/raw :=>) ;lol
     b)))
 
+
+(defn- sigconfn
+  "Given a constant identifier (string or symbol), it's type, and an optional
+  default, represents the 'CONSTANT id : type [:= default]' syntax
+  Retruns a function that, when given an id returns the string" 
+  [sigcon typ & default]
+  (fn [id] 
+    (apply expr/space-sepd
+      (lit/raw sigcon)
+      (lit/raw id)
+      (lit/raw \:)
+      (lit/raw typ)
+      (if-not (empty? default)
+        (cons (lit/raw ":=") default) '()))))
+
 (defn- sigcon
   "Given a constant identifier (string or symbol), it's type, and an optional
   default, represents the 'CONSTANT id : type [:= default]' syntax"
   [sigcon id typ & default]
-  (apply expr/space-sepd
-    (lit/raw sigcon)
-    (lit/raw id)
-    (lit/raw \:)
-    (lit/raw typ)
-    (if-not (empty? default)
-      (cons (lit/raw ":=") default) '())))
+  ((apply sigconfn sigcon typ default) id))
 
 (def constant (partial sigcon :CONSTANT))
 (def signal (partial sigcon :SIGNAL))
+(def variable (partial variable :VARIABLE))
 
-(defn assign
+(def constant-fn (partial sigcon :CONSTANT))
+(def signal-fn (partial sigcon :SIGNAL))
+(def variable-fn (partial sigcon :VARIABLE))
+
+
+(defn assign-signal!
   "Given a signal id and what it should be assigned to, represents the
   'id <= towhat' syntax"
   [id towhat]
   (expr/space-sepd
     (lit/raw id)
     (lit/raw "<=")
+    towhat))
+
+(defn assign-variable!
+  "Given a signal id and what it should be assigned to, represents the
+  'id <: towhat' syntax"
+  [id towhat]
+  (expr/space-sepd
+    (lit/raw id)
+    (lit/raw ":=")
     towhat))
 
 (defn port
@@ -92,7 +117,7 @@
 (def lib-load (partial lib-loaduse :LIBRARY))
 (def lib-use (partial lib-loaduse :USE))
 
-(defn concat
+(defn concat-elements
   "Given one or more arrays/elements, represents the 'a & b & c ...'
   concatanation syntax"
   [& args]
@@ -105,6 +130,8 @@
     (downto (lit/num10 7) (lit/num10 0))
     (downto (lit/num10 7) (lit/num10 0))))
   (proto/to-str (array (lit/bit 0) (lit/bit 1)))
+  (proto/to-str (lit/bit 0))
+
   (proto/to-str (array
     (array (lit/bit 0) (lit/bit 1))
     (array (lit/bit 0) (lit/bit 1))))
@@ -112,11 +139,14 @@
   (proto/to-str (constant :a :REAL))
   (proto/to-str (constant :a :REAL (lit/num10 25)))
   (proto/to-str (signal :a :REAL))
+  (proto/to-str (signal :a :REAL))
+
   (proto/to-str (signal :a :REAL (lit/num10 25)))
-  (proto/to-str (assign :a (lit/num2 "1001")))
+  (proto/to-str (assign-signal! :a (lit/num2 "1001")))
+  (proto/to-str (lit/raw "jafe"))
   (proto/to-str (port :sig1 :in :real
                       :sig2 :out :real))
   (proto/to-str (lib-load "IEEE" "HARDI"))
   (proto/to-str (lib-use "IEEE.STD_LOGIC_1164" "HARDI.Devices.All"))
-  (proto/to-str (concat (lit/bit 0) (lit/bit 1)))
+  (proto/to-str (concat-elements (lit/bit 0) (lit/bit 1)))
 ])

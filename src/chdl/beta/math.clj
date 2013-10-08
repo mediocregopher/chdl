@@ -55,10 +55,20 @@
 (def xor (partial math-distribute :xor))
 (def xnor (partial math-distribute :xnor))
 
+(def inc (partial math-distribute :+ (lit/num10 1)))
+(def dec #(math-distribute :- % (lit/num10 1)))
+
 (comment
   (proto/to-str
     (apply math-distribute :op (map lit/raw [:a :b :c :d :e])))
   (proto/to-str (abs (lit/num10 50)))
+  (proto/to-str (abs (lit/num10 50)))
+
+  (proto/to-str (inc (lit/num10 50)))
+  (proto/to-str (dec (lit/num10 50)))
+  (proto/to-str (math-distribute :+ (lit/num10 1) (lit/num10 100)))
+
   (proto/to-str (exp (lit/num10 50) (lit/num2 "1001") (lit/num8 "7404")))
   (proto/to-str (= (lit/num10 10) (lit/num2 "1010")))
+
 )
