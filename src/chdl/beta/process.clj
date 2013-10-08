@@ -16,11 +16,12 @@
    Optional declarations to create signals and variables.
    and finally the body of code inside the process statement as a seq"
   [{:keys [sensitivity-list declarations label body] 
-    :or {declarations [] sensitivity-list []}}]
+    :or {declarations [] sensitivity-list []} :as args}]
+  {:pre [(contracts/hashmap-has? args [:body])]}
   (expr/concated
     (expr/newlined
       (expr/concated
-        (if-not (nil? label) (expr/concated (lit/raw label) (lit/raw ": ")) (lit/raw ""))
+        (if-not (nil? label) (expr/concated label (lit/raw ": ")) (lit/raw ""))
         (lit/raw :process)
         (if-not (empty? sensitivity-list)
           (expr/parend
