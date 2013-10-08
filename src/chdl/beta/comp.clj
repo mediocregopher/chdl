@@ -65,7 +65,7 @@
 
 (def constant (partial sigcon :CONSTANT))
 (def signal (partial sigcon :SIGNAL))
-(def variable (partial variable :VARIABLE))
+(def variable (partial sigcon :VARIABLE))
 
 (def constant-fn (partial sigcon :CONSTANT))
 (def signal-fn (partial sigcon :SIGNAL))
