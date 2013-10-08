@@ -13,14 +13,15 @@
              some-sig (signal (bit 0)) 
              :watch clk rst]
     (cond 
-      (= rst (bit 1)) (assign-signal! state (bit-vec "0000"))
-      (= load-n (bit 1)) (assign-signal! state (unsigned input))
-      (and (= clk (bit 1)) (event? clk)) 
-        (cond
-          (= up-n (bit 0)) (assign-signal! state (inc state))
-          (= up-n (bit 1)) (assign-signal! state (dec state)))))
+      (high? rst)                                 (assign-signal! state (bit-vec "0000"))
+      (low? load-n)                               (assign-signal! state (unsigned input))
+      (and (high? clk) (event? clk) (low? up-n))  (assign-signal! state (inc state))
+      (and (high? clk) (event? clk) (high? up-n)) (assign-signal! state (dec state))))
+
 
     process(clk, rst)
+      signal some_sig : '0';
+      variable some_variable : '0';
     begin
             if(rst = '1') then
                 state <= "0000";
@@ -28,7 +29,6 @@
                 state <= unsigned(input);
             elsif (clk='1' and clk'event) then
                 if (up_n = '0') then
-                    -- go up
                     state <= state + 1;
                 elsif(up_n = '1') then
                     state <= state - 1;
