@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [midje.sweet :refer :all]
             [chdl.alpha.literal :as lit :refer :all]
-            [chdl.beta.process :refer :all]
+            [chdl.beta.process :refer [process]]
+            [chdl.beta.function :refer [function]]
             [chdl.alpha.proto :as proto]
             [chdl.beta.comp :refer :all]
             [clojure.string :as s]))
@@ -82,5 +83,24 @@
              writeline(output, l);
              wait;
           end process;"))
+       
+  (fact "A function test"
+    (clean-spaces
+      (proto/to-str
+        (function {:name (lit/raw "Transcod_1") :parameters [(lit/raw "Value: in bit_vector(0 to 7)")]
+                   :return-type (lit/raw "bit_vector")
+                   :body [(lit/raw "case Value is when \"00000000\" => return \"01010101\"")
+                          (lit/raw "when \"01010101\" => return \"00000000\"")
+                          (lit/raw "when others => return \"11111111\"")
+                          (lit/raw "end case")]})))
 
+    => (clean-spaces 
+         "function Transcod_1 (Value: in bit_vector(0 to 7)) return bit_vector is
+          begin
+             case Value is
+               when \"00000000\" => return \"01010101\";
+               when \"01010101\" => return \"00000000\";
+               when others => return \"11111111\";
+             end case;
+          end Transcod_1;"))
 )

@@ -4,6 +4,14 @@
             [chdl.alpha.expr :as expr]
             [chdl.alpha.proto :as proto]))
 
+(defn do-statements 
+  "Given statements, return a new literal that combines them all 
+  with a semicolon and newline at the end of every statement"
+  [& statements] 
+  (apply expr/concated
+    (for [s statements]
+      (expr/newlined (expr/semicolond s)))))
+
 (defn paren-call
   "Given a function call (or whatever, it's vhdl) and arguments, represents the
   'func(arg1,arg2,arg3)' syntax"
