@@ -48,8 +48,8 @@
     (proto/to-str (signal :a :REAL (num10 25))) =>
       "SIGNAL a : REAL := 10#25#"
 
-    (proto/to-str (port :sig1 :in :real
-                        :sig2 :out :real)) =>
+    (proto/to-str (port [:sig1 :in :real]
+                        [:sig2 :out :real])) =>
       "PORT(sig1 : in real;\nsig2 : out real)"
 
     (proto/to-str (lib-load "IEEE" "HARDI")) => "LIBRARY IEEE, HARDI"

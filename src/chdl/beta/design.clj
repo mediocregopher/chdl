@@ -49,8 +49,8 @@
 (comment
   (println (proto/to-str
     (entity :wat (comp/port
-      :inSig :in :BIT
-      :outSig :out :BIT))))
+      [:inSig :in :BIT]
+      [:outSig :out :BIT]))))
 
   (println (proto/to-str
     (architecture :wut :wat

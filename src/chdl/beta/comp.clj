@@ -112,7 +112,7 @@
             (lit/raw \:)
             (lit/raw inout)
             (lit/raw typ))))
-        (partition 3 args))))))
+        args)))))
 
 (defn- lib-loaduse
   "Given one or more libraries that need to be imported, represents the
@@ -152,8 +152,8 @@
   (proto/to-str (signal :a :REAL (lit/num10 25)))
   (proto/to-str (assign-signal! :a (lit/num2 "1001")))
   (proto/to-str (lit/raw "jafe"))
-  (proto/to-str (port :sig1 :in :real
-                      :sig2 :out :real))
+  (proto/to-str (port [:sig1 :in :real]
+                      [:sig2 :out :real]))
   (proto/to-str (lib-load "IEEE" "HARDI"))
   (proto/to-str (lib-use "IEEE.STD_LOGIC_1164" "HARDI.Devices.All"))
   (proto/to-str (concat-elements (lit/bit 0) (lit/bit 1)))
