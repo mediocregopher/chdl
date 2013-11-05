@@ -25,6 +25,10 @@
       (design/entity cname (make-port in out inout))
       (design/architecture :ARCH cname internal body))))
 
+(defn chip-inst
+  [cname & ports]
+  (apply design/component (name (gensym)) cname :ARCH ports))
+
 (comment
 
   (proto/to-str
@@ -39,6 +43,7 @@
       :out [[:out1 :bit]]
       :internal [(comp/signal :tmpSign :bit)]
       :body [
+        (chip-inst :other-chip [:otherSign :tmpSign])
         (comp/assign-signal! :tmpSign (math/xor :in1 :in2))
         (comp/assign-signal! :out1 (math/xor :in3 :out1))])
       ))
