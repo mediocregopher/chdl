@@ -65,7 +65,7 @@
       (if-not (empty? default)
         (cons (lit/raw ":=") default) '()))))
 
-(defn- sigcon
+(defn sigcon
   "Given a constant identifier (string or symbol), it's type, and an optional
   default, represents the 'CONSTANT id : type [:= default]' syntax"
   [sigcon id typ & default]
