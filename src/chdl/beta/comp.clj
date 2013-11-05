@@ -41,6 +41,11 @@
   [e0 & e]
   (expr/parend (apply expr/comma-sepd e0 e)))
 
+(defn array-index
+  "Represents the syntax 'arr(i)'"
+  [arr i & is]
+  (apply paren-call arr (lit/auto-raw i) (map lit/auto-raw is)))
+
 (defn type-is
   "Given a type name and what it should alias to, represents the 'TYPE tname IS
   is' syntax"
@@ -169,4 +174,5 @@
   (proto/to-str (concat-elements (lit/bit 0) (lit/bit 1)))
   (proto/to-str
     (type-is :arr (array-of :BIT (downto (lit/num10 7) (lit/num10 0)))))
+  (proto/to-str (array-index :arr 0))
 ])

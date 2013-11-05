@@ -10,6 +10,7 @@
     (keyword? el) (name el)
     (string? el) el
     (char? el) (str el)
+    (number? el) (str el)
     :else (do (println "Could not convert" el "to string") "WAT")))
 
 (proto/defalpha-item raw
