@@ -53,7 +53,6 @@
   values (vec (map second values)))
 
 (defn let-proc-options [bindings]
-  (def k bindings)
   (let [[bindings sensitivity] (split-with (partial not= :watch) bindings)
         sensitivity (vec (rest sensitivity))
         symbols (take-nth 2 bindings)
