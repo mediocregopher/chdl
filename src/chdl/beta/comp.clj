@@ -76,7 +76,7 @@
       (lit/raw sigcon)
       (lit/raw id)
       (lit/raw \:)
-      (lit/raw typ)
+      (lit/auto-raw typ)
       (if-not (empty? default)
         (cons (lit/raw ":=") default) '()))))
 
