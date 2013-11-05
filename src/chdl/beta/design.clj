@@ -37,9 +37,9 @@
   (design-unit
     (expr/space-sepd
       (lit/raw :ARCHITECTURE)
-      (lit/raw name)
+      (lit/raw of)
       (lit/raw :OF)
-      (lit/raw of))
+      (lit/raw name))
     (expr/space-sepd
       (lit/raw :ARCHITECTURE)
       (lit/raw name))
