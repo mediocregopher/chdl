@@ -41,6 +41,16 @@
   [e0 & e]
   (expr/parend (apply expr/comma-sepd e0 e)))
 
+(defn type-is
+  "Given a type name and what it should alias to, represents the 'TYPE tname IS
+  is' syntax"
+  [tname is]
+  (expr/space-sepd
+    (lit/raw :TYPE)
+    (lit/raw tname)
+    (lit/raw :IS)
+    (lit/auto-raw is)))
+
 (defn others
   "Given some literal (or possibly another others expression, as would be used
   with a multi-level array), represents the '(OTHERS => :somebit)' syntax"
@@ -157,4 +167,6 @@
   (proto/to-str (lib-load "IEEE" "HARDI"))
   (proto/to-str (lib-use "IEEE.STD_LOGIC_1164" "HARDI.Devices.All"))
   (proto/to-str (concat-elements (lit/bit 0) (lit/bit 1)))
+  (proto/to-str
+    (type-is :arr (array-of :BIT (downto (lit/num10 7) (lit/num10 0)))))
 ])
