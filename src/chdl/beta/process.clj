@@ -22,7 +22,7 @@
           (expr/parend
             (apply expr/comma-sepd sensitivity-list))
           (lit/raw ""))))
-    (apply do-statements declarations)
+    (expr/tabd (apply do-statements declarations))
     (expr/newlined (lit/raw :begin))
-    (apply do-statements body)
+    (expr/tabd (apply do-statements body))
     (expr/semicolond (lit/raw "end process"))))
