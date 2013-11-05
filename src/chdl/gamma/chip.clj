@@ -14,6 +14,14 @@
       (map #(vector (first %) :inout (second %)) inout))))
 
 (defn chip
+  "An instantiator for the definition of a new chip entity. This entity has
+  input/output/inout signals, possible internal signals, ability to have
+  multiple other chips embedded inside of it, processes, etc...
+
+  It takes alternating keywords and then sequences to fill those
+  keywords. :in describes all the input signals, :out and :inout are similar.
+  :internal describes signals and types that are internal to this chip. Finally
+  :body describes the actual logic of the chip"
   [cname & b]
   (let [m (reduce #(assoc %1 (first %2) (second %2)) {} (partition 2 b))
         in (m :in [])
@@ -26,6 +34,8 @@
       (design/architecture :ARCH cname internal body))))
 
 (defn chip-inst
+  "Used to instantiate a chip entity inside of another chip. You give it the
+  name of the chip entity and any port pairs that need to be hooked up"
   [cname & ports]
   (apply design/component (name (gensym)) cname :ARCH ports))
 
