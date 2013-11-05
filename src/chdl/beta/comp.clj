@@ -100,7 +100,7 @@
   'id <= towhat' syntax"
   [id towhat]
   (expr/space-sepd
-    (lit/raw id)
+    (lit/auto-raw id)
     (lit/raw "<=")
     (lit/auto-raw towhat)))
 

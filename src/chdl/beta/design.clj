@@ -59,7 +59,7 @@
     (comp/paren-call cname (lit/raw arch))
     (apply comp/paren-call "PORT MAP"
       (map #(expr/space-sepd
-              (lit/raw (first %)) (lit/raw :=>) (lit/raw (second %)))
+              (lit/auto-raw (first %)) (lit/raw :=>) (lit/auto-raw (second %)))
            ports))))
 
 (comment
