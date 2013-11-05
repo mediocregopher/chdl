@@ -126,7 +126,7 @@
             (lit/raw id)
             (lit/raw \:)
             (lit/raw inout)
-            (lit/raw typ))))
+            (lit/auto-raw typ))))
         args)))))
 
 (defn- lib-loaduse
@@ -167,7 +167,8 @@
   (proto/to-str (signal :a :REAL (lit/num10 25)))
   (proto/to-str (assign-signal! :a (lit/num2 "1001")))
   (proto/to-str (lit/raw "jafe"))
-  (proto/to-str (port [:sig1 :in :real]
+  (def arr (array-of :BIT (downto (lit/num10 7) (lit/num10 0))))
+  (proto/to-str (port [:sig1 :in arr]
                       [:sig2 :out :real]))
   (proto/to-str (lib-load "IEEE" "HARDI"))
   (proto/to-str (lib-use "IEEE.STD_LOGIC_1164" "HARDI.Devices.All"))
