@@ -20,6 +20,10 @@
     (lit/raw func)
     (expr/parend (apply expr/comma-sepd args))))
 
+(defn paren-call-n
+  [func & args]
+  (apply paren-call func (map expr/newlined args)))
+
 (defn downto
   "Given two numeric literals a and b, represents the 'a downto b' syntax"
   [a b]

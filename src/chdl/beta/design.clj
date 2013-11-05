@@ -57,7 +57,7 @@
     (lit/raw \:)
     (lit/raw :ENTITY)
     (comp/paren-call cname (lit/raw arch))
-    (apply comp/paren-call "PORT MAP"
+    (apply comp/paren-call-n "PORT MAP"
       (map #(expr/space-sepd
               (lit/auto-raw (first %)) (lit/raw :=>) (lit/auto-raw (second %)))
            ports))))
