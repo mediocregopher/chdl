@@ -56,6 +56,6 @@
     (architecture :wut :wat
       [ (comp/signal :tmpSig1 :BIT (lit/bit 0))
         (comp/signal :tmpSig2 :INTEGER) ]
-      [ (comp/assign-signal! :tmpSig1 (math/not (lit/raw :inSig)))
-        (comp/assign-signal! :outSig (lit/raw :tmpSig1)) ])))
+      [ (comp/assign-signal! :tmpSig1 (math/not :inSig))
+        (comp/assign-signal! :outSig :tmpSig1) ])))
 )

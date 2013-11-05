@@ -87,7 +87,7 @@
   (expr/space-sepd
     (lit/raw id)
     (lit/raw "<=")
-    towhat))
+    (lit/auto-raw towhat)))
 
 (defn assign-variable!
   "Given a signal id and what it should be assigned to, represents the
@@ -96,7 +96,7 @@
   (expr/space-sepd
     (lit/raw id)
     (lit/raw ":=")
-    towhat))
+    (lit/auto-raw towhat)))
 
 (defn port
   "Given partitions of three arguments, each set having a signal identifier, the

@@ -8,19 +8,19 @@
   will be used for general math operations"
   [op a b]
   (expr/parend
-    (expr/space-sepd a (lit/raw op) b)))
+    (expr/space-sepd (lit/auto-raw a) (lit/raw op) (lit/auto-raw b))))
 
 (defn- math-single-op
   "Like math-op, but only for a single operand in the syntax '(op a')"
   [op a]
   (expr/parend
-    (expr/space-sepd (lit/raw op) a)))
+    (expr/space-sepd (lit/raw op) (lit/auto-raw a))))
 
 (defn- math-distribute
   "Given an operator and at least one operand, represents the syntax
   '(((a op b) op c) op d ...)' etc... for however many operands are given"
   [op a & args]
-  (reduce (partial math-op op) a args))
+  (reduce (partial math-op op) (lit/auto-raw a) args))
 
 (def exp (partial math-distribute :**))
 (def abs (partial math-single-op :abs))
@@ -60,7 +60,7 @@
 
 (comment
   (proto/to-str
-    (apply math-distribute :op (map lit/raw [:a :b :c :d :e])))
+    (math-distribute :op :a (lit/num2 "010") :c :d :e))
   (proto/to-str (abs (lit/num10 50)))
   (proto/to-str (abs (lit/num10 50)))
 

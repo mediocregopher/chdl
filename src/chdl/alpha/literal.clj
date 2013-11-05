@@ -18,6 +18,12 @@
   [el]
     (to-str [_] (gen-to-str el)))
 
+(defn auto-raw
+  "Given any clojure value, if it's not already an alpha-item this will wrap it
+  in a raw call"
+  [el]
+  (if (satisfies? proto/alpha-item el) el (raw el)))
+
 (proto/defalpha-item character
   "Given a character, represents that single
   character"

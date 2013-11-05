@@ -33,6 +33,6 @@
       [[:out1 :bit]]
       []
       [(comp/signal :tmpSign :bit)]
-      (comp/assign-signal! :tmpSign (math/xor (lit/raw :in1) (lit/raw :in2)))
-      (comp/assign-signal! :out1 (math/xor (lit/raw :in3) (lit/raw :out1))))))
+      (comp/assign-signal! :tmpSign (math/xor :in1 :in2))
+      (comp/assign-signal! :out1 (math/xor :in3 :out1)))))
 )
