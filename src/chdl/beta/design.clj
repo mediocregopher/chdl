@@ -46,6 +46,22 @@
     pre-beg
     post-beg))
 
+
+(defn component
+  "Given a component's individual name, the name of the actual component, the
+  architecture for it, and a vector pairs for port mappings, represents the
+  'cname : ENTITY vname(arch) PORT MAP(i0 => o0, i1 => o1)' syntax"
+  [vname cname arch & ports]
+  (expr/space-sepd
+    (lit/raw vname)
+    (lit/raw \:)
+    (lit/raw :ENTITY)
+    (comp/paren-call cname (lit/raw arch))
+    (apply comp/paren-call "PORT MAP"
+      (map #(expr/space-sepd
+              (lit/raw (first %)) (lit/raw :=>) (lit/raw (second %)))
+           ports))))
+
 (comment
   (println (proto/to-str
     (entity :wat (comp/port
@@ -58,4 +74,8 @@
         (comp/signal :tmpSig2 :INTEGER) ]
       [ (comp/assign-signal! :tmpSig1 (math/not :inSig))
         (comp/assign-signal! :outSig :tmpSig1) ])))
+
+
+  (println (proto/to-str
+    (component :C1 :LargeFlipFlop :ARCH [:clk :clk] [:q :q1] [:d :d1])))
 )
