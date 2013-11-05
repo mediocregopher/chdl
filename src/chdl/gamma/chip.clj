@@ -14,10 +14,16 @@
       (map #(vector (first %) :inout (second %)) inout))))
 
 (defn chip
-  [name in out inout head & body]
-  (expr/concated
-    (design/entity name (make-port in out inout))
-    (design/architecture :ARCH name head body)))
+  [cname & b]
+  (let [m (reduce #(assoc %1 (first %2) (second %2)) {} (partition 2 b))
+        in (m :in [])
+        out (m :out [])
+        inout (m :inout [])
+        internal (m :internal [])
+        body (m :body [])]
+    (expr/concated
+      (design/entity cname (make-port in out inout))
+      (design/architecture :ARCH cname internal body))))
 
 (comment
 
@@ -29,10 +35,12 @@
 
   (println (proto/to-str
     (chip :testchip
-      [[:in1 :bit] [:in2 :bit] [:in3 :bit]]
-      [[:out1 :bit]]
-      []
-      [(comp/signal :tmpSign :bit)]
-      (comp/assign-signal! :tmpSign (math/xor :in1 :in2))
-      (comp/assign-signal! :out1 (math/xor :in3 :out1)))))
+      :in  [[:in1 :bit] [:in2 :bit] [:in3 :bit]]
+      :out [[:out1 :bit]]
+      :internal [(comp/signal :tmpSign :bit)]
+      :body [
+        (comp/assign-signal! :tmpSign (math/xor :in1 :in2))
+        (comp/assign-signal! :out1 (math/xor :in3 :out1))])
+      ))
+
 )
