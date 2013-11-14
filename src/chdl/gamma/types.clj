@@ -16,18 +16,11 @@
       :value (apply f args)})))
 
 (def bit (decorate-type :BIT lit/bit))
-
-(def character
-  (with-meta lit/character {:type :CHARACTER}))
-
-(def bool
-  (with-meta lit/bool {:type :BOOLEAN}))
-
-(def bit-vec
-  (with-meta lit/bit-vec {:type :BIT_VECTOR}))
-
-(def integer
-  (with-meta lit/numeric {:type :INTEGER}))
+(def character (decorate-type :CHARACTER lit/character))
+(def bool (decorate-type :BOOLEAN lit/bool))
+(def bit-vec (decorate-type :BIT_VECTOR lit/bit-vec))
+(def integer (decorate-type :INTEGER lit/num10))
+(def string (decorate-type :STRING lit/string))
 
 ;(defmacro sigcon [sigcon value]
 ;  (let [var-name (str (gensym "variable"))]
