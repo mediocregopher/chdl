@@ -8,26 +8,25 @@
             [chdl.alpha.proto :as proto]))
 
 (defn decorate-type [type-keyword f]
-  (fn 
+  (fn
     ([]
      {:type type-keyword})
     ([& args]
-     {:type type-keyword 
+     {:type type-keyword
       :value (apply f args)})))
 
 (def bit (decorate-type :BIT lit/bit))
-  
 
-(def character 
+(def character
   (with-meta lit/character {:type :CHARACTER}))
 
-(def bool 
+(def bool
   (with-meta lit/bool {:type :BOOLEAN}))
 
-(def bit-vec 
+(def bit-vec
   (with-meta lit/bit-vec {:type :BIT_VECTOR}))
 
-(def integer 
+(def integer
   (with-meta lit/numeric {:type :INTEGER}))
 
 ;(defmacro sigcon [sigcon value]
@@ -46,7 +45,7 @@
   `(sigcon :SIGNAL ~value))
 
 
-(defn sigcon 
+(defn sigcon
   "same as beta.comp/sigcon, but infers type!"
   [sigcon typed-lit]
   (let [var-name (str (gensym (str (name sigcon) "-" (name (:type typed-lit)))))]

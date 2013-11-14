@@ -1,6 +1,6 @@
 (ns chdl.gamma.control
   "Control structures for chdl (e.g. cond and condp)"
-  (:require 
+  (:require
     [chdl.gamma.types :as t]
     [chdl.alpha.literal :as lit]
     [chdl.beta.comp :as c]
@@ -11,7 +11,7 @@
 
 (partition 2 [1 2 3 4 5])
 
-(defn cond 
+(defn cond
   "Imitates the lisp cond, but on vhdl"
   [& options]
   {:pre (even? (count options))}
@@ -46,10 +46,10 @@
         (drop 1 options))
         (expr/newlined (expr/semicolond (lit/raw "end if"))))))
 
-(comment 
-  (println 
-    (proto/to-str 
-      (cond 
+(comment
+  (println
+    (proto/to-str
+      (cond
         (lit/raw "foo") (lit/raw "something")
         (lit/raw "foo1") (lit/raw "something1")
         (lit/raw "foo2") (lit/raw "something2")
