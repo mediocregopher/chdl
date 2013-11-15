@@ -3,7 +3,8 @@
             [chdl.beta.design :as design]
             [chdl.beta.math :as math]
             [chdl.alpha.expr :as expr]
-            [chdl.alpha.proto :as proto]))
+            [chdl.alpha.proto :as proto]
+            [chdl.gamma.types :as types]))
 
 (defn- make-port
   [in out inout]
@@ -12,6 +13,49 @@
       (map #(vector (first %) :in    (second %)) in)
       (map #(vector (first %) :out   (second %)) out)
       (map #(vector (first %) :inout (second %)) inout))))
+
+(defn- chip-def->map
+  [body]
+  (reduce #(assoc %1 (last (first %2)) (second %2)) {}
+    (partition 2 (partition-by keyword? body))))
+
+(defn sigdef-quote
+  "Takes in a list of type declarations from gamma.type (bit, character,
+  etc...), and quotes each one's first argument. This is useful because it lets
+  us pass in symbols into the type functions, so later (in make-port) they get
+  used as signal declarations"
+  [defs]
+  `(list
+    ~@(map #(cons (first %)
+            (cons `'~(second %) ;ermagerd magic!
+            (drop 2 %))) defs)))
+
+(comment
+
+  (defn- make-port
+    [in out inout]
+    (apply comp/port
+      (concat
+        (map #(vector (:name %) :in    (:type %)) in)
+        (map #(vector (:name %) :out   (:type %)) out)
+        (map #(vector (:name %) :inout (:type %)) inout))))
+
+  (defmacro chip [cname & args]
+    (let [m        (chip-def->map args)
+          in       (sigdef-quote (m :in []))
+          out      (sigdef-quote (m :out []))
+          inout    (sigdef-quote (m :inout []))
+          internal (m :internal [])
+          body (m :body [])]
+      `(expr/concated
+        (design/entity '~cname (make-port ~in ~out ~inout))
+        (design/architecture :ARCH '~cname ~internal ~body))))
+
+  (println (proto/to-str
+  (chip wat
+    :in (types/bit a) (types/bit b)
+    :out (types/bool ret))))
+)
 
 (defn chip
   "An instantiator for the definition of a new chip entity. This entity has
