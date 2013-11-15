@@ -12,8 +12,11 @@
     ([]
      {:type type-keyword})
     ([& args]
-     {:type type-keyword
-      :value (apply f args)})))
+      (if (symbol? (first args))
+        {:type type-keyword
+         :name (first args)}
+        {:type type-keyword
+         :value (apply f args)}))))
 
 (def bit (decorate-type :BIT lit/bit))
 (def character (decorate-type :CHARACTER lit/character))
