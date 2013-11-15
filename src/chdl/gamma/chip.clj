@@ -36,25 +36,30 @@
     [in out inout]
     (apply comp/port
       (concat
-        (map #(vector (:name %) :in    (:type %)) in)
-        (map #(vector (:name %) :out   (:type %)) out)
-        (map #(vector (:name %) :inout (:type %)) inout))))
+        (map #(vector (:name %) :IN    (:type %)) in)
+        (map #(vector (:name %) :OUT   (:type %)) out)
+        (map #(vector (:name %) :INOUT (:type %)) inout))))
+
+  (defn- make-internal [internal]
+    (map #(comp/signal (:name %) (:type %)) internal))
 
   (defmacro chip [cname & args]
     (let [m        (chip-def->map args)
           in       (sigdef-quote (m :in []))
           out      (sigdef-quote (m :out []))
           inout    (sigdef-quote (m :inout []))
-          internal (m :internal [])
+          internal (sigdef-quote (m :internal []))
           body (m :body [])]
       `(expr/concated
         (design/entity '~cname (make-port ~in ~out ~inout))
-        (design/architecture :ARCH '~cname ~internal ~body))))
+        (design/architecture :ARCH '~cname (make-internal ~internal) ~body))))
 
   (println (proto/to-str
   (chip wat
     :in (types/bit a) (types/bit b)
-    :out (types/bool ret))))
+    :out (types/bool ret)
+    :inout (types/bit-vec somebus)
+    :internal (types/string tmp))))
 )
 
 (defn chip
