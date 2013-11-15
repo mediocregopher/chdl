@@ -1,5 +1,6 @@
 (ns chdl.gamma.chip
-  (:require [chdl.beta.comp :as comp]
+  (:require [clojure.walk :refer [walk]]
+            [chdl.beta.comp :as comp]
             [chdl.beta.design :as design]
             [chdl.beta.math :as math]
             [chdl.alpha.expr :as expr]
@@ -14,23 +15,12 @@
       (map #(vector (first %) :out   (second %)) out)
       (map #(vector (first %) :inout (second %)) inout))))
 
-(defn- chip-def->map
-  [body]
-  (reduce #(assoc %1 (last (first %2)) (second %2)) {}
-    (partition 2 (partition-by keyword? body))))
-
-(defn sigdef-quote
-  "Takes in a list of type declarations from gamma.type (bit, character,
-  etc...), and quotes each one's first argument. This is useful because it lets
-  us pass in symbols into the type functions, so later (in make-port) they get
-  used as signal declarations"
-  [defs]
-  `(list
-    ~@(map #(cons (first %)
-            (cons `'~(second %) ;ermagerd magic!
-            (drop 2 %))) defs)))
-
 (comment
+
+  (defn- chip-def->map
+    [body]
+    (reduce #(assoc %1 (last (first %2)) (second %2)) {}
+      (partition 2 (partition-by keyword? body))))
 
   (defn- make-port
     [in out inout]
@@ -43,16 +33,27 @@
   (defn- make-internal [internal]
     (map #(comp/signal (:name %) (:type %)) internal))
 
+  (defn- symbolize
+    "Given an arbitrary sequence, with possibly embedded sequences, traverses
+    the whole thing and finds any symbols in it that aren't resolvable and
+    quotes them. This is presumably used inside of a defmacro"
+    [tree]
+    (walk #(cond (and (symbol? %) (nil? (resolve %))) `(quote ~%)
+                 (seq? %) (symbolize %)
+                 :else %) identity tree))
+
   (defmacro chip [cname & args]
     (let [m        (chip-def->map args)
-          in       (sigdef-quote (m :in []))
-          out      (sigdef-quote (m :out []))
-          inout    (sigdef-quote (m :inout []))
-          internal (sigdef-quote (m :internal []))
-          body (m :body [])]
+          in       `(list ~@(symbolize (m :in [])))
+          out      `(list ~@(symbolize (m :out [])))
+          inout    `(list ~@(symbolize (m :inout [])))
+          internal `(list ~@(symbolize (m :internal [])))
+          body     `(list ~@(m :body []))]
       `(expr/concated
         (design/entity '~cname (make-port ~in ~out ~inout))
-        (design/architecture :ARCH '~cname (make-internal ~internal) ~body))))
+        (design/architecture :ARCH '~cname
+          (make-internal ~internal)
+          (flatten ~body)))))
 
   (println (proto/to-str
   (chip wat
