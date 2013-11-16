@@ -8,9 +8,24 @@
             [chdl.gamma.types :as types]))
 
 (defn- chip-def->map
+  "Partitions a given sequence into 2-tuples, where each key is a keyword and
+  each value can be anything. The values are assoc'd to the key in the return
+  map. Any values not associated with a keyword get associated with the :body
+  keyword in the return map
+
+  Example:
+  (chip-def->map [:in [1 2 3] :out [4 5 6] 7 8 9])
+    => {:in (1 2 3) :out (4 5 6) :body (7 8 9)}
+  "
   [body]
-  (reduce #(assoc %1 (last (first %2)) (last (second %2))) {}
-    (partition 2 (partition-by keyword? body))))
+  (first (reduce
+    (fn [last-state el]
+      (let [[m prev-key] last-state]
+        (cond (keyword? el) [m el]
+              (nil? prev-key)
+                [(assoc m :body (apply vector (concat (m :body []) [el]))) nil]
+              :else [(assoc m prev-key el) nil])))
+    [{} nil] body)))
 
 (defn- make-port-vecs
   "Given a vector of alternating names and type decorators, and a direction,
@@ -63,9 +78,9 @@
                b (types/bit 0)]
     :out      [ret (types/bit)]
     :internal [tmp (types/bit 0)]
-    :body [
-      (<! tmp (math/xor a b))
-      (<! ret (math/not tmp))])"
+
+    (<! tmp (math/xor a b))
+    (<! ret (math/not tmp)))"
   [cname & args]
   (let [m        (chip-def->map args)
         in       (symbolize (m :in []))
@@ -93,7 +108,7 @@
                b (types/bit 0)]
     :out      [ret (types/bit)]
     :internal [tmp (types/bit 0)]
-    :body [
-      (<! tmp (math/xor a b))
-      (<! ret (math/not tmp))])))
+
+    (<! tmp (math/xor a b))
+    (<! ret (math/not tmp)))))
 )
