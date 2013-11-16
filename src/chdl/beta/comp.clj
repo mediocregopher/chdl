@@ -82,7 +82,7 @@
       (lit/raw \:)
       (lit/auto-raw typ)
       (if-not (empty? default)
-        (cons (lit/raw ":=") default) '()))))
+        (cons (lit/raw ":=") (map lit/auto-raw default)) '()))))
 
 (defn sigcon
   "Given a constant identifier (string or symbol), it's type, and an optional

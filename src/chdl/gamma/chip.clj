@@ -9,19 +9,32 @@
 
 (defn- chip-def->map
   [body]
-  (reduce #(assoc %1 (last (first %2)) (second %2)) {}
+  (reduce #(assoc %1 (last (first %2)) (last (second %2))) {}
     (partition 2 (partition-by keyword? body))))
+
+(defn- make-port-vecs
+  "Given a vector of alternating names and type decorators, and a direction,
+  creates the sequence of vectors that should be passed into beta.comp/port"
+  [ntds dir]
+  (map
+    (fn [ntd]
+      (let [[n td] ntd]
+        (apply vector n dir (:type td) (if (:value td) [(:value td)] []))))
+    (partition 2 ntds)))
 
 (defn- make-port
   [in out inout]
   (apply comp/port
     (concat
-      (map #(vector (:name %) :IN    (:type %)) in)
-      (map #(vector (:name %) :OUT   (:type %)) out)
-      (map #(vector (:name %) :INOUT (:type %)) inout))))
+      (make-port-vecs in :IN)
+      (make-port-vecs out :OUT)
+      (make-port-vecs inout :INOUT))))
 
 (defn- make-internal [internal]
-  (map #(comp/signal (:name %) (:type %)) internal))
+  (map
+    #(apply comp/signal (first %) (:type (second %))
+      (if (:value (second %)) [(:value (second %))] '()))
+    (partition 2 internal)))
 
 (defn- symbolize
   "Given an arbitrary sequence, with possibly embedded sequences, traverses
@@ -46,20 +59,20 @@
 
   Example:
   (chip wat
-    :in (types/bit a) (types/bit b)
-    :out (types/bool ret)
-    :inout (types/bit-vec somebus)
-    :internal (types/string tmp)
-    :body
-      (<! a ret)
-      (chip-inst blah [a b] [c d]))"
+    :in       [a (types/bit)
+               b (types/bit 0)]
+    :out      [ret (types/bit)]
+    :internal [tmp (types/bit 0)]
+    :body [
+      (<! tmp (math/xor a b))
+      (<! ret (math/not tmp))])"
   [cname & args]
   (let [m        (chip-def->map args)
-        in       `(list ~@(symbolize (m :in [])))
-        out      `(list ~@(symbolize (m :out [])))
-        inout    `(list ~@(symbolize (m :inout [])))
-        internal `(list ~@(symbolize (m :internal [])))
-        body     `(list ~@(symbolize (m :body [])))]
+        in       (symbolize (m :in []))
+        out      (symbolize (m :out []))
+        inout    (symbolize (m :inout []))
+        internal (symbolize (m :internal []))
+        body     (symbolize (m :body []))]
     `(expr/concated
       (design/entity '~cname (make-port ~in ~out ~inout))
       (design/architecture :ARCH '~cname
@@ -76,12 +89,11 @@
 
   (println (proto/to-str
   (chip wat
-    :in (types/bit a) (types/bit b)
-    :out (types/bool ret)
-    :inout (types/bit-vec somebus)
-    :internal (types/string tmp)
-    :body
-      (<! a ret)
-      (chip-inst blah [a b] [c d]))))
-
+    :in       [a (types/bit)
+               b (types/bit 0)]
+    :out      [ret (types/bit)]
+    :internal [tmp (types/bit 0)]
+    :body [
+      (<! tmp (math/xor a b))
+      (<! ret (math/not tmp))])))
 )
