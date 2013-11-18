@@ -6,7 +6,8 @@
     [chdl.beta.comp :as c]
     [chdl.beta.process :as proc]
     [chdl.alpha.expr :as expr]
-    [chdl.alpha.proto :as proto]))
+    [chdl.alpha.proto :as proto]
+    [chdl.gamma.protocols :as gamma-proto]))
 (comment 
 
 ;; Ideally, I'd like to do something like this:
@@ -40,50 +41,29 @@
 
 )
 
-(defn map-every-nth [f coll n]
-  (map-indexed #(if (zero? (mod (inc %1) n)) (f %2) %2) coll))
-
-(defmacro let-declarations [symbols values & body]
-  ;{:pre [(= (count (eval values)) (count (eval symbols)))]}
-  (let [ values (map first values)] 
-    `(let ~(vec (interleave symbols values))
-       ~@body)))
-
-(defn get-declarations [values]
-  values (vec (map second values)))
-
-(defn let-proc-options [bindings]
+(defmacro let-proc [bindings & body]
   (let [[bindings sensitivity] (split-with (partial not= :watch) bindings)
         sensitivity (vec (rest sensitivity))
-        symbols (take-nth 2 bindings)
-        values (eval (vec (take-nth 2 (rest bindings))))]
-    {:sensitivity-list sensitivity
-     :declarations (get-declarations values)
-     :symbols symbols
-     :values values}))
-
-(defmacro let-proc-setup [bindings & body]
-  (let [options (let-proc-options bindings)]
-      (assoc  
-        (select-keys options [:declarations :sensitivity-list])
-        :body
-         `(let-declarations ~(:symbols options) ~(:values options) ~@body))))
-
-(defmacro let-proc [bindings & body]
-  `(proc/process
-     (let-proc-setup ~bindings ~@body)))
+        symbols (vec (take-nth 2 bindings))]
+    `(proc/process
+      (let ~(vec bindings)
+         {:sensitivity-list ~sensitivity
+          :declarations (map gamma-proto/construct ~symbols)
+          :body ~(vec body)}))))
+    
 
 (comment 
 
 
-(def clk (first (t/signal (t/bit 0))))
-(def rst (first (t/signal (t/bit 0))))
+(def clk (t/signal (t/bit 0)))
+(def rst (t/signal (t/bit 0)))
+
 
 (println 
   (proto/to-str
-(let-proc
-  [some-variable (t/variable (t/bit 0))
-   some-sig (t/signal (t/bit 0)) 
-   :watch clk rst]
-  [(c/paren-call :write some-variable (c/paren-call :String' (lit/string "Hello world!")))])))
- )
+  (let-proc
+    [some-variable (t/variable (t/bit 0))
+     some-sig (t/signal (t/bit 0))
+     :watch clk rst]
+    (c/paren-call :write some-variable (c/paren-call :String' (lit/string "Hello world!"))))))
+)
