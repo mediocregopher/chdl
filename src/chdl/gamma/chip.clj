@@ -5,6 +5,7 @@
             [chdl.beta.math :as math]
             [chdl.alpha.expr :as expr]
             [chdl.alpha.proto :as proto]
+            [chdl.gamma.protocols :as gproto]
             [chdl.gamma.types :as types]))
 
 (defn- chip-def->map
@@ -34,16 +35,15 @@
   (map
     (fn [ntd]
       (let [[n td] ntd]
-        (apply vector n dir (:type td) (if (:value td) [(:value td)] []))))
+        (apply comp/port dir n (:type td) (if (:value td) [(:value td)] []))))
     (partition 2 ntds)))
 
-(defn- make-port
+(defn- make-ports
   [in out inout]
-  (apply comp/port
-    (concat
-      (make-port-vecs in :IN)
-      (make-port-vecs out :OUT)
-      (make-port-vecs inout :INOUT))))
+  (concat
+    (make-port-vecs in :IN)
+    (make-port-vecs out :OUT)
+    (make-port-vecs inout :INOUT)))
 
 (defn- make-internal [internal]
   (map
@@ -89,8 +89,8 @@
         internal (symbolize (m :internal []))
         body     (symbolize (m :body []))]
     `(expr/concated
-      (design/entity '~cname (make-port ~in ~out ~inout))
-      (design/architecture :ARCH '~cname
+      (apply design/entity '~cname (make-ports ~in ~out ~inout))
+      (design/architecture '~cname :ARCH
         (make-internal ~internal)
         (flatten ~body)))))
 

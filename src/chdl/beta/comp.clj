@@ -118,26 +118,17 @@
     (lit/auto-raw towhat)))
 
 (defn port
-  "Given vectors of three or four arguments, each set having a signal identifier, the
-  direction of the signal (:in, :out, or :inout), the signal's type, and
-  optionally a default value, represents the PORT(id : direction type; ...)
-  syntax"
-  [& args]
-  (expr/concated (lit/raw :PORT) (expr/parend
-    (apply expr/sepd (lit/raw ";\n")
-      (map (fn [argset]
-        (let [id (get argset 0)
-              inout (get argset 1)
-              typ (get argset 2)
-              default (get argset 3)]
-          (apply expr/space-sepd
-            (lit/raw id)
-            (lit/raw \:)
-            (lit/raw inout)
-            (lit/auto-raw typ)
-            (if (nil? default) []
-              [(lit/raw ":=") (lit/auto-raw default)]))))
-        args)))))
+  "Given a direction (:IN, :OUT, or :INOUT), a name for the signal, the signals
+  type, and a possible default value for it, represents the
+  'id : direction type := default' syntax"
+  [inout id typ & default]
+  (apply expr/space-sepd
+              (lit/raw id)
+              (lit/raw \:)
+              (lit/raw inout)
+              (lit/auto-raw typ)
+              (if (empty? default) []
+                [(lit/raw ":=") (lit/auto-raw (first default))])))
 
 (defn- lib-loaduse
   "Given one or more libraries that need to be imported, represents the
@@ -178,8 +169,7 @@
   (proto/to-str (assign-signal! :a (lit/num2 "1001")))
   (proto/to-str (lit/raw "jafe"))
   (def arr (array-of :BIT (downto (lit/num10 7) (lit/num10 0))))
-  (proto/to-str (port [:sig1 :in arr 4]
-                      [:sig2 :out :real]))
+  (proto/to-str (port :in :wat arr "111"))
   (proto/to-str (lib-load "IEEE" "HARDI"))
   (proto/to-str (lib-use "IEEE.STD_LOGIC_1164" "HARDI.Devices.All"))
   (proto/to-str (concat-elements (lit/bit 0) (lit/bit 1)))

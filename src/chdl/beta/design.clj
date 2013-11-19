@@ -28,18 +28,20 @@
 (defn entity
   "Represents an entity with the given ports. Entities are simply an interface
   declaration, their implementation is in the architecture"
-  [name ports]
-  (let [name-decl (expr/space-sepd (lit/raw :ENTITY) (lit/raw name))]
-    (design-unit name-decl name-decl [ports] [])))
+  [name & ports]
+  (let [name-decl (expr/space-sepd (lit/raw :ENTITY) (lit/raw name))
+        port-decl (expr/concated (lit/raw :PORT) (expr/parend
+                    (apply expr/sepd (lit/raw ";\n") ports)))]
+    (design-unit name-decl name-decl [port-decl] [])))
 
 (defn architecture
   [of name pre-beg post-beg]
   (design-unit
     (expr/space-sepd
       (lit/raw :ARCHITECTURE)
-      (lit/raw of)
+      (lit/raw name)
       (lit/raw :OF)
-      (lit/raw name))
+      (lit/raw of))
     (expr/space-sepd
       (lit/raw :ARCHITECTURE)
       (lit/raw name))
@@ -64,9 +66,8 @@
 
 (comment
   (println (proto/to-str
-    (entity :wat (comp/port
-      [:inSig :in :BIT]
-      [:outSig :out :BIT]))))
+    (entity :wat (comp/port :IN :inSig :BIT)
+                 (comp/port :OUT :outSig :BIT))))
 
   (println (proto/to-str
     (architecture :wut :wat

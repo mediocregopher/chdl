@@ -8,21 +8,18 @@
 (def numsigs 8)
 (def in-sigs (map #(str "inSig" %1) (range numsigs)))
 (def out-sigs (map #(str "outSig" %1) (range (/ numsigs 2))))
+(def ports
+  (concat
+    (map #(comp/port :IN % :BIT) in-sigs)
+    (map #(comp/port :OUT % :BIT) out-sigs)))
 
-(def ports 
-  (apply 
-    comp/port 
-    (concat
-      (apply concat (map #(vector %1 :in :BIT) in-sigs))
-      (apply concat (map #(vector %1 :out :BIT) out-sigs)))))
-
-(def assigns 
+(def assigns
   (map
     #(let [[[in1 in2] out] %1]
       (comp/assign-signal! out (math/xor (lit/raw in1) (lit/raw in2))))
     (map vector (partition 2 in-sigs) out-sigs))) ; This is how clojure zips
 
-(def ent (design/entity :xorer ports))
+(def ent (apply design/entity :xorer ports))
 (def arch (design/architecture :xorer :arch [] assigns))
 
 (defn -main [& args]
