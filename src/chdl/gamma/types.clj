@@ -19,7 +19,7 @@
   gamma-proto/typed-construct
   proto/alpha-item
   (type-info [this] (:type this))
-  (to-str [this] (proto/to-str (:construct this))))
+  (to-str [this] (proto/to-str (:value this))))
 
 
 (defn decorate-type [type-keyword f]
