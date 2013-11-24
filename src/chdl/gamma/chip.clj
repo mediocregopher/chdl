@@ -66,7 +66,6 @@
   [dst src]
   (comp/assign-signal! dst src))
 
-
 (defmacro chip
   "An instantiator for the definition of a new chip entity. This entity has
   input/output/inout signals, possible internal signals, ability to have
@@ -102,13 +101,19 @@
 
 (comment
 
+  (map proto/to-str
+    (make-internal ['tmp (types/bit 0) 'tmp2 (types/bit-vec 4 "0000")]))
+
   (println (proto/to-str
   (chip wat
     :in       [a (types/bit)
                b (types/bit 0)]
     :out      [ret (types/bit)]
-    :internal [tmp (types/bit 0)]
+    :internal [tmp (types/bit 0)
+               tmp2 (types/bit-vec 8 "00000000")]
 
     (<! tmp (math/xor a b))
+    (<! (types/vec-nth tmp2 0 4) (types/bit-vec 4 "1111"))
+    (<! (types/vec-nth tmp2 4 8) (types/vec-nth tmp2 0 4))
     (<! ret (math/not tmp)))))
 )

@@ -27,7 +27,7 @@
 (defn downto
   "Given two numeric literals a and b, represents the 'a downto b' syntax"
   [a b]
-  (expr/space-sepd a (lit/raw :DOWNTO) b))
+  (expr/space-sepd (lit/auto-raw a) (lit/raw :DOWNTO) (lit/auto-raw b)))
 
 (defn array-of
   "Given an array type (for example, :bit) and at least one downto statement
@@ -67,7 +67,7 @@
   (expr/parend (expr/space-sepd
     (lit/raw :OTHERS)
     (lit/raw :=>) ;lol
-    b)))
+    (lit/auto-raw b))))
 
 
 (defn- sigconfn

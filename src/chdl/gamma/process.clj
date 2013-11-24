@@ -1,4 +1,4 @@
-(ns chdl.gamma.processes
+(ns chdl.gamma.process
   (:require 
     [chdl.gamma.types :as t]
     [chdl.alpha.literal :as lit]

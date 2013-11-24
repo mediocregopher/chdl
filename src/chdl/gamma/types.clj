@@ -13,14 +13,13 @@
   [type f]
   gamma-proto/typed-construct
   (type-info [this] (:type this)))
-  
+
 (defrecord sym-construct-value 
   [type f construct]
   gamma-proto/typed-construct
   proto/alpha-item
   (type-info [this] (:type this))
   (to-str [this] (proto/to-str (:value this))))
-
 
 (defn decorate-type [type-keyword f]
   (fn
@@ -37,9 +36,19 @@
 (def bit (decorate-type :BIT lit/bit))
 (def character (decorate-type :CHARACTER lit/character))
 (def bool (decorate-type :BOOLEAN lit/bool))
-(def bit-vec (decorate-type :BIT_VECTOR lit/bit-vec))
 (def integer (decorate-type :INTEGER lit/num10))
 (def string (decorate-type :STRING lit/string))
+
+(defn bit-vec [size & default]
+  (let [typ (c/paren-call :BIT_VECTOR (c/downto (dec size) 0))
+        f lit/bit-vec]
+    (if (empty? default)
+      (map->sym-construct {:type typ :f f})
+      (map->sym-construct-value {:type typ :f f :value (apply f default)}))))
+
+(defn vec-nth
+  ([var-name i] (c/paren-call var-name (lit/raw i)))
+  ([var-name start end] (c/paren-call var-name (c/downto (dec end) start))))
 
 (defn sigcon
   "same as beta.comp/sigcon, but infers type!"
