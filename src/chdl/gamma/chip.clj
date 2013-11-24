@@ -79,9 +79,10 @@
 (defmacro chip-inst
   "Used to instantiate a chip entity inside of another chip. You give it the
   name of the chip entity and any port pairs that need to be hooked up"
-  [cname & ports]
+  [cname ports]
   (let [port-map (:port-map (eval cname))
-        port-pairs (map #(let [[dst src] %] [(port-map dst) src]) ports)]
+        port-pairs (map #(let [[dst src] %] [(port-map dst) src])
+          (partition 2 ports))]
     `(design/component (name (gensym :CHIP)) ~(name cname) :ARCH ~@port-pairs)))
 
 (comment
@@ -106,6 +107,6 @@
       :ports [c (types/in-sig (types/bit))
               d (types/in-sig (types/bit))]
 
-      (chip-inst wat [a (core/vec-nth c 0 4)] [b d]))
+      (chip-inst wat [a (core/vec-nth c 0 4) b d]))
   ))
 )
