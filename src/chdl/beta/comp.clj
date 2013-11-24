@@ -17,7 +17,7 @@
   'func(arg1,arg2,arg3)' syntax"
   [func & args]
   (expr/concated
-    (lit/raw func)
+    (lit/auto-raw func)
     (expr/parend (apply expr/comma-sepd args))))
 
 (defn paren-call-n

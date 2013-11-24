@@ -28,38 +28,6 @@
               :else [(assoc m prev-key el) nil])))
     [{} nil] body)))
 
-(defn- make-port-vecs
-  "Given a vector of alternating names and type decorators, and a direction,
-  creates the sequence of vectors that should be passed into beta.comp/port"
-  [ntds dir]
-  (map
-    (fn [ntd]
-      (let [[n td] ntd]
-        (apply comp/port dir n (:type td) (if (:value td) [(:value td)] []))))
-    (partition 2 ntds)))
-
-(defn- make-ports
-  [in out inout]
-  (concat
-    (make-port-vecs in :IN)
-    (make-port-vecs out :OUT)
-    (make-port-vecs inout :INOUT)))
-
-(defn- make-internal [internal]
-  (map
-    #(apply comp/signal (first %) (:type (second %))
-      (if (:value (second %)) [(:value (second %))] '()))
-    (partition 2 internal)))
-
-(defn- symbolize
-  "Given an arbitrary sequence, with possibly embedded sequences, traverses
-  the whole thing and finds any symbols in it that aren't resolvable and
-  quotes them. This is presumably used inside of a defmacro"
-  [tree]
-  (walk #(cond (and (symbol? %) (nil? (resolve %))) `(quote ~%)
-               (sequential? %) (symbolize %)
-               :else %) identity tree))
-
 (defn <!
   "Pretty way of assigning signal. Really just a wrapper over
   chdl.beta.comp/assign-signal!"
@@ -73,25 +41,27 @@
 
   Example:
   (chip wat
-    :in       [a (types/bit)
-               b (types/bit 0)]
-    :out      [ret (types/bit)]
-    :internal [tmp (types/bit 0)]
+    :ports    [a   (types/in-sig (types/bit))
+               b   (types/in-sig (types/bit 0))
+               ret (types/out-sig (types/bit))]
+    :internal [tmp (types/signal (types/bit 0))]
 
     (<! tmp (math/xor a b))
     (<! ret (math/not tmp)))"
   [cname & args]
   (let [m        (chip-def->map args)
-        in       (symbolize (m :in []))
-        out      (symbolize (m :out []))
-        inout    (symbolize (m :inout []))
-        internal (symbolize (m :internal []))
-        body     (symbolize (m :body []))]
-    `(expr/concated
-      (apply design/entity '~cname (make-ports ~in ~out ~inout))
-      (design/architecture '~cname :ARCH
-        (make-internal ~internal)
-        (flatten ~body)))))
+        port-bindings     (m :ports)
+        internal-bindings (m :internal)
+        bindings          (vec (concat port-bindings internal-bindings))
+        port-syms         (vec (take-nth 2 port-bindings))
+        internal-syms     (vec (take-nth 2 internal-bindings))
+        body              (m :body)]
+    `(let ~bindings
+      (expr/concated
+        (apply design/entity '~cname (map gproto/construct ~port-syms))
+        (design/architecture '~cname :ARCH
+          (map gproto/construct ~internal-syms)
+          (flatten ~body))))))
 
 (defn chip-inst
   "Used to instantiate a chip entity inside of another chip. You give it the
@@ -106,11 +76,12 @@
 
   (println (proto/to-str
   (chip wat
-    :in       [a (types/bit)
-               b (types/bit 0)]
-    :out      [ret (types/bit)]
-    :internal [tmp (types/bit 0)
-               tmp2 (types/bit-vec 8 "00000000")]
+    :ports [a (types/in-sig (types/bit))
+            b (types/in-sig (types/bit 0))
+            ret (types/out-sig (types/bit))]
+
+    :internal [tmp  (types/signal (types/bit 0))
+               tmp2 (types/signal (types/bit-vec 8))]
 
     (<! tmp (math/xor a b))
     (<! (types/vec-nth tmp2 0 4) (types/bit-vec 4 "1111"))

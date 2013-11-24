@@ -50,10 +50,14 @@
   ([var-name i] (c/paren-call var-name (lit/raw i)))
   ([var-name start end] (c/paren-call var-name (c/downto (dec end) start))))
 
+(defn- gen-name [& n]
+  (str (gensym
+    (apply str (interpose "-" (map name n))))))
+
 (defn sigcon
   "same as beta.comp/sigcon, but infers type!"
   [sigcon typed-lit]
-  (let [var-name (str (gensym (str (name sigcon) "-" (name (:type typed-lit)))))
+  (let [var-name (gen-name sigcon)
         construct (if (:value typed-lit)
                 (c/sigcon sigcon var-name (:type typed-lit) (:value typed-lit))
                 (c/sigcon sigcon var-name (:type typed-lit)))]
@@ -64,8 +68,21 @@
 (def constant (partial sigcon :CONSTANT))
 (def signal (partial sigcon :SIGNAL))
 
+(defn dir-sig
+  "same as sigcon, but used for port statements which need a direction"
+  [dir typed-lit]
+  (let [var-name (gen-name :SIGNAL dir)
+        construct (apply c/port dir var-name (:type typed-lit)
+                    (if (:value typed-lit) [(:value typed-lit)] []))]
+    (symbols/map->chdl-symbol
+      (assoc typed-lit :name var-name :construct construct))))
+
+(def in-sig (partial dir-sig :IN))
+(def out-sig (partial dir-sig :OUT))
+(def inout-sig (partial dir-sig :INOUT))
 
 (comment 
+
   ;; when we define a variable we get a chdl-symbol
   (def some-var
     (variable (bit 0)))

@@ -54,7 +54,6 @@
 
 (comment 
 
-
 (def clk (t/signal (t/bit 0)))
 (def rst (t/signal (t/bit 0)))
 
