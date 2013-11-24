@@ -4,6 +4,7 @@
     [chdl.alpha.literal :as lit]
     [chdl.alpha.expr :as expr]
     [chdl.beta.math :as math]
+    [chdl.beta.comp :as comp]
     [chdl.gamma.types :as t]))
 
 (defn raw-bit-value? [value chdl-symbol]
@@ -26,6 +27,12 @@
     (fn [chdl-symbol]
       (expr/parend
         (expr/concated chdl-symbol (lit/raw "'event"))))))
+
+(defn vec-nth
+  ([var-name i] (comp/paren-call var-name (lit/raw i)))
+  ([var-name start end]
+    (comp/paren-call var-name (comp/downto (dec end) start))))
+
 
 (comment 
 

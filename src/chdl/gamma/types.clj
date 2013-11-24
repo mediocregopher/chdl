@@ -46,10 +46,6 @@
       (map->sym-construct {:type typ :f f})
       (map->sym-construct-value {:type typ :f f :value (apply f default)}))))
 
-(defn vec-nth
-  ([var-name i] (c/paren-call var-name (lit/raw i)))
-  ([var-name start end] (c/paren-call var-name (c/downto (dec end) start))))
-
 (defn- gen-name [& n]
   (str (gensym
     (apply str (interpose "-" (map name n))))))

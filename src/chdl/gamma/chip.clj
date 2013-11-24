@@ -6,6 +6,7 @@
             [chdl.alpha.expr :as expr]
             [chdl.alpha.proto :as proto]
             [chdl.gamma.protocols :as gproto]
+            [chdl.gamma.core :as core]
             [chdl.gamma.types :as types]))
 
 (defn- chip-def->map
@@ -34,6 +35,11 @@
   [dst src]
   (comp/assign-signal! dst src))
 
+(defrecord chip-rec
+  [port-map construct]
+  proto/alpha-item
+  (to-str [this] (proto/to-str (:construct this))))
+
 (defmacro chip
   "An instantiator for the definition of a new chip entity. This entity has
   input/output/inout signals, possible internal signals, ability to have
@@ -49,7 +55,7 @@
     (<! tmp (math/xor a b))
     (<! ret (math/not tmp)))"
   [cname & args]
-  (let [m        (chip-def->map args)
+  (let [m                 (chip-def->map args)
         port-bindings     (m :ports)
         internal-bindings (m :internal)
         bindings          (vec (concat port-bindings internal-bindings))
@@ -57,25 +63,30 @@
         internal-syms     (vec (take-nth 2 internal-bindings))
         body              (m :body)]
     `(let ~bindings
-      (expr/concated
-        (apply design/entity '~cname (map gproto/construct ~port-syms))
-        (design/architecture '~cname :ARCH
-          (map gproto/construct ~internal-syms)
-          (flatten ~body))))))
+      (->chip-rec
+        ~(reduce #(assoc %1 `(quote ~(first %2)) (first %2)) {}
+          (partition 2 port-bindings))
+        (expr/concated
+          (apply design/entity '~cname (map gproto/construct ~port-syms))
+          (design/architecture '~cname :ARCH
+            (map gproto/construct ~internal-syms)
+            (flatten ~body)))))))
 
-(defn chip-inst
+(defmacro defchip
+  [cname & args]
+  `(def ~cname (chip ~cname ~@args)))
+
+(defmacro chip-inst
   "Used to instantiate a chip entity inside of another chip. You give it the
   name of the chip entity and any port pairs that need to be hooked up"
   [cname & ports]
-  (apply design/component (name (gensym)) cname :ARCH ports))
+  (let [port-map (:port-map (eval cname))
+        port-pairs (map #(let [[dst src] %] [(port-map dst) src]) ports)]
+    `(design/component (name (gensym :CHIP)) ~(name cname) :ARCH ~@port-pairs)))
 
 (comment
 
-  (map proto/to-str
-    (make-internal ['tmp (types/bit 0) 'tmp2 (types/bit-vec 4 "0000")]))
-
-  (println (proto/to-str
-  (chip wat
+  (defchip wat
     :ports [a (types/in-sig (types/bit))
             b (types/in-sig (types/bit 0))
             ret (types/out-sig (types/bit))]
@@ -84,7 +95,17 @@
                tmp2 (types/signal (types/bit-vec 8))]
 
     (<! tmp (math/xor a b))
-    (<! (types/vec-nth tmp2 0 4) (types/bit-vec 4 "1111"))
-    (<! (types/vec-nth tmp2 4 8) (types/vec-nth tmp2 0 4))
-    (<! ret (math/not tmp)))))
+    (<! (core/vec-nth tmp2 0 4) (types/bit-vec 4 "1111"))
+    (<! (core/vec-nth tmp2 4 8) (core/vec-nth tmp2 0 4))
+    (<! ret (math/not tmp)))
+
+  (println (proto/to-str wat))
+
+  (println (proto/to-str
+    (chip wut
+      :ports [c (types/in-sig (types/bit))
+              d (types/in-sig (types/bit))]
+
+      (chip-inst wat [a (core/vec-nth c 0 4)] [b d]))
+  ))
 )
