@@ -68,7 +68,7 @@
 
 (defn- gen-name [& n]
   (str (gensym
-    (apply str (interpose "-" (map name n))))))
+    (apply str (interpose "_" (map name n))))))
 
 (defn sigcon
   "same as beta.comp/sigcon, but infers type!"
