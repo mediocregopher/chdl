@@ -68,9 +68,9 @@
         ~(reduce #(assoc %1 `(quote ~(first %2)) (first %2)) {}
           (partition 2 port-bindings))
         (expr/concated
-          (apply design/entity '~cname (map gproto/construct ~port-syms))
+          (apply design/entity '~cname (map gproto/construct (flatten ~port-syms)))
           (design/architecture '~cname :ARCH
-            (map gproto/construct ~internal-syms)
+            (map gproto/construct (flatten ~internal-syms))
             (flatten ~body)))))))
 
 (defmacro defchip
