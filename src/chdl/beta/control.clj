@@ -44,7 +44,34 @@
         (drop 1 options))
         (expr/newlined (expr/semicolond (lit/raw "end if"))))))
 
+(defn for-loop-vhdl 
+  "vhdl's for loop syntax
+  Only supports one binding in [param range]"
+  [[param range] & body]
+  (expr/concated
+    (expr/newlined
+      (apply expr/space-sepd 
+        (map lit/raw [:for param :in range :loop])))
+    (expr/tabd
+      (apply c/do-statements body))
+    (expr/newlined
+      (apply expr/space-sepd (map lit/raw [:end :loop])))))
+
+
 (comment
+
+  (println (proto/to-str
+             (c/to 0 3)))
+
+  ((println)
+    (proto/to-str
+      (for-loop-vhdl 
+        ["I" "0 to 3"]
+        (lit/raw "1 + 1")
+        (lit/raw "1 + 1")
+        (lit/raw "1 + 1"))))
+
+
   (println
     (proto/to-str
       (cond
