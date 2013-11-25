@@ -30,6 +30,11 @@
   [a b]
   (expr/space-sepd (lit/auto-raw a) (lit/raw :DOWNTO) (lit/auto-raw b)))
 
+(defn to
+  "Given two numeric literals a and b, represents the 'a downto b' syntax"
+  [a b]
+  (expr/space-sepd (lit/auto-raw a) (lit/raw :TO) (lit/auto-raw b)))
+
 (defn array-of
   "Given an array type (for example, :bit) and at least one downto statement
   (more than one for a multi-dimensional array), represents the 'array(a downto
