@@ -13,13 +13,4 @@
 (defmacro defchdl-fn 
   "will returns a inline function"
   [name type args & body]
-  (def ~name (apply chdl-fn type args body)))
-
-
-(comment 
-
-  (def ^{:BIT 3} f 1337)
-  (meta f)
-
-
-  )
+  `(def ~name (apply chdl-fn type args body)))
