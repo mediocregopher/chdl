@@ -13,4 +13,4 @@
 (defmacro defchdl-fn 
   "will returns a inline function"
   [name type args & body]
-  `(def ~name (apply chdl-fn type args body)))
+  `(def ~name (chdl-fn type args ~@body)))
