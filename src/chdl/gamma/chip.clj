@@ -29,18 +29,18 @@
               :else [(assoc m prev-key el) nil])))
     [{} nil] body)))
 
-(defn <!
+(defn >!
   "Pretty way of assigning signal. Really just a wrapper over
   chdl.beta.comp/assign-signal!"
   [dst src]
   (comp/assign-signal! dst src))
 
 (defrecord chip-rec
-  [port-map construct]
+  [cname port-map construct]
   proto/alpha-item
   (to-str [this] (proto/to-str (:construct this))))
 
-(defmacro chip
+( defmacro chip
   "An instantiator for the definition of a new chip entity. This entity has
   input/output/inout signals, possible internal signals, ability to have
   multiple other chips embedded inside of it, processes, etc...
@@ -52,8 +52,8 @@
                ret (types/out-sig (types/bit))]
     :internal [tmp (types/signal (types/bit 0))]
 
-    (<! tmp (math/xor a b))
-    (<! ret (math/not tmp)))"
+    (>! tmp (math/xor a b))
+    (>! ret (math/not tmp)))"
   [cname & args]
   (let [m                 (chip-def->map args)
         port-bindings     (m :ports)
@@ -64,6 +64,7 @@
         body              (m :body)]
     `(let ~bindings
       (->chip-rec
+        ~cname
         ~(reduce #(assoc %1 `(quote ~(first %2)) (first %2)) {}
           (partition 2 port-bindings))
         (expr/concated
@@ -95,10 +96,10 @@
     :internal [tmp  (types/signal (types/bit 0))
                tmp2 (types/signal (types/slog-vec 8 "101010"))]
 
-    (<! tmp (math/vxor a b))
-    (<! (core/vec-nth tmp2 0 4) (types/bit-vec 4 "1111"))
-    (<! (core/vec-nth tmp2 4 8) (core/vec-nth tmp2 0 4))
-    (<! ret (math/vnot tmp)))
+    (>! tmp (math/vxor a b))
+    (>! (core/vec-nth tmp2 0 4) (types/bit-vec 4 "1111"))
+    (>! (core/vec-nth tmp2 4 8) (core/vec-nth tmp2 0 4))
+    (>! ret (math/vnot tmp)))
 
   (println (proto/to-str wat))
 
