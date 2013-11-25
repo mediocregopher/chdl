@@ -2,7 +2,7 @@
   "the main loop for the md5 function"
   (require [chdl.gamma.core :as core :refer :all]
            [chdl.beta.math :refer :all]
-           [chdl.gamma.function :as function]
+           [chdl.gamma.function :as function :refer :all]
            [chdl.gamma.types :as t :refer :all]
            [chdl.gamma.chip :as chip :refer :all]
            [chdl.beta.control :as control]
@@ -48,47 +48,88 @@
   #(signal (slog-vec 32 (vec-nth in-512 (* 32 %) (* 32 (inc %)))))
   (range 0 16)))
 
-(defn pass-maker [pass-number body]
-  (let [cname
-         (gensym (str "chip-" pass-number "-"))]
-    (chip/chip
-      cname
-      :ports  [    A (t/in-sig (t/std-uint 32))
-                     B (t/in-sig (t/std-uint 32))
-                     C (t/in-sig (t/std-uint 32))
-                     D (t/in-sig (t/std-uint 32))
-                     M (t/in-sig (t/slog-vec 32))
-                     Ao (t/out-sig (t/std-uint 32))
-                     Bo (t/out-sig (t/std-uint 32))
-                     Co (t/out-sig (t/std-uint 32))
-                     Do (t/out-sig (t/std-uint 32))]
-      (eval body))))
-
-(defn leftrotate [A F M i] ;i is a clojure int, not a chdl symbol
-  (vrol (v+ A F (K i) M) (s i)))
-
 (defn g-maker [i]
   (cond
-    (< 16 i) i
-    (< 32 i) (vmod (v+ (v* std-5 (lit-uint->std-uint i 32)) std-1) std-16)
-    (< 48 i) (vmod (v+ (v* std-3 (lit-uint->std-uint i 32)) std-5) std-16)
-    (< 64 i) (vmod (v* std-7 (lit-uint->std-uint i 32)) std-16)))
+    (> 16 i) i
+    (> 32 i) (vmod (v+ (v* std-5 (lit-uint->std-uint i 32)) std-1) std-16)
+    (> 48 i) (vmod (v+ (v* std-3 (lit-uint->std-uint i 32)) std-5) std-16)
+    (> 64 i) (vmod (v* std-7 (lit-uint->std-uint i 32)) std-16)))
 
-(defn F-maker [A B C D i]
+(defn leftrotate [A F M i] ;i is a clojure int, not a chdl symbol
+  (vrol (v+ A F (K i) (vec-nth M (g-maker i))) (s i)))
+
+(defn F-maker [B C D i]
   (cond
-    (< 16 i) (vor (vand B C) (vand (vnot B) D))
-    (< 32 i) (vor (vand D B) (vand (vnot D) C))
-    (< 48 i) (vxor B (vxor C D))
-    (< 64 i) (vxor C (vor B (vnot D)))))
+    (> 16 i) (vor (vand B C) (vand (vnot B) D))
+    (> 32 i) (vor (vand D B) (vand (vnot D) C))
+    (> 48 i) (vxor B (vxor C D))
+    (> 64 i) (vxor C (vor B (vnot D)))))
 
-(defn pass-body [pass-number]
-  `[ (>! dTemp D)
-     (>! Do C)
-     (>! Co Bo)
-     (>! Bo (leftrotate A (F-maker A B C D ~pass-number) M ~pass-number))
-     (>! dTemp D)])
+
+(defn pass-maker [pass-number]
+  (let [cname
+         (gensym (str "chip_" pass-number "_"))]
+    (chip/chip
+      cname
+      :ports  [A (t/in-sig (t/std-uint 32))
+               B (t/in-sig (t/std-uint 32))
+               C (t/in-sig (t/std-uint 32))
+               D (t/in-sig (t/std-uint 32))
+               M (t/in-sig (t/slog-vec 32))
+               Ao (t/out-sig (t/std-uint 32))
+               Bo (t/out-sig (t/std-uint 32))
+               Co (t/out-sig (t/std-uint 32))
+               Do (t/out-sig (t/std-uint 32))]
+      :internal [ dTemp (t/signal (t/std-uint 32))]
+      (>! dTemp D)
+      (>! Do C)
+      (>! Co B)
+      (>! Bo (v+ B (leftrotate A (F-maker B C D pass-number) M pass-number)))
+      (>! dTemp D))))
+
+(def chips (map pass-maker (range 64)))
 
 (comment
+
+  (println (proto/to-str (first chips)))
+
+  (F-maker 1)
+  (pass-body)
+
+  (pp/pprint
+    (macroexpand-1 (pass-maker 0 (pass-body 0))))
+  (require '[chdl.alpha.literal :as lit])
+
+  (println
+    (proto/to-str (pass-maker 1))) 
+
+
+  (require '[clojure.pprint :as pp])
+
+  (defn foo-test2 [A]
+    (v+ A 3) )
+
+  (defn foo-test [A]
+    (v+ (v+ A 3) (foo-test2 A)) )
+
+  (println 
+    (proto/to-str 
+      (chip/chip
+        "asdf"
+        :ports [a (t/in-sig (t/std-uint 32))]
+        (foo-test a))))
+
+  (pp/pprint (pass-maker 0 (pass-body 0)))
+  (pass-maker 0 (pass-body 0))
+  (pass-body 0)
+  (:construct (t/in-sig (t/std-uint 32)))
+  ( pass-body 0 )
+
+  )
+
+
+(comment
+
 
   (macroexpand-1 '(pass-maker 1 "1234444") )
 
