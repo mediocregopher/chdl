@@ -6,8 +6,7 @@
             [chdl.beta.process :as proc]
             [chdl.alpha.expr :as expr]
             [chdl.alpha.proto :as proto]
-            [chdl.gamma.protocols :as gamma-proto]
-            [chdl.gamma.symbols :as symbols]))
+            [chdl.gamma.protocols :as gamma-proto]))
 
 (defrecord sym-construct 
   [type f]
@@ -20,6 +19,16 @@
   proto/alpha-item
   (type-info [this] (:type this))
   (to-str [this] (proto/to-str (:value this))))
+
+(defrecord chdl-symbol
+  [name type f value]
+  gamma-proto/typed-construct
+  gamma-proto/symbol-value
+  proto/alpha-item
+  (type-info [this] (:type this))
+  (sym-name  [this] (:name this))
+  (construct [this] (:construct this))
+  (to-str    [this] (:name this)))
 
 (defn decorate-type [type-keyword f]
   (fn
@@ -57,7 +66,7 @@
         construct (if (:value typed-lit)
                 (c/sigcon sigcon var-name (:type typed-lit) (:value typed-lit))
                 (c/sigcon sigcon var-name (:type typed-lit)))]
-    (symbols/map->chdl-symbol (assoc typed-lit :name var-name :construct construct))))
+    (map->chdl-symbol (assoc typed-lit :name var-name :construct construct))))
 
 
 (def variable (partial sigcon :VARIABLE))
@@ -70,7 +79,7 @@
   (let [var-name (gen-name :SIGNAL dir)
         construct (apply c/port dir var-name (:type typed-lit)
                     (if (:value typed-lit) [(:value typed-lit)] []))]
-    (symbols/map->chdl-symbol
+    (map->chdl-symbol
       (assoc typed-lit :name var-name :construct construct))))
 
 (def in-sig (partial dir-sig :IN))

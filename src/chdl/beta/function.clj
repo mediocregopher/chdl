@@ -7,13 +7,6 @@
             [chdl.alpha.expr :as expr]
             [chdl.alpha.proto :as p]))
 
-;;  function function_name (parameter_list) return type is
-;;      declarations
-;;  begin
-;;      sequential statements
-;;  end function_name;
-;; 
-
 (defn function 
   "Takes in a function name, a seq of typed parameters, 
   a return type, and a body of sequential statements to create a

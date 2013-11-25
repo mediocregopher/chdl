@@ -9,39 +9,48 @@
     [chdl.alpha.expr :as expr]
     [chdl.alpha.proto :as proto]))
 
-(proto/to-str 
-  (expr/space-sepd
-    (lit/raw "something")
-    (lit/raw "something")))
+(defn cond
+  "Imitates the lisp cond, but on vhdl"
+  [& options]
+  {:pre (even? (count options))}
+  (let [options (partition 2 options)]
+    (expr/concated
+      (reduce
+        (fn [acc [predicate clauses]]
+          (expr/concated
+            acc
+            (if (not= predicate :else)
+              (expr/concated
+               (expr/newlined
+                 (expr/space-sepd
+                   (lit/raw "elsif")
+                   (expr/parend predicate)
+                   (lit/raw "then")))
+               (expr/newlined
+                 (expr/tabd (expr/semicolond clauses))))
+              (expr/concated
+               (expr/newlined
+                 (lit/raw "else"))
+               (expr/newlined
+                 (expr/tabd (expr/semicolond clauses)))))))
+        (expr/concated
+          (expr/newlined
+            (expr/space-sepd
+              (lit/raw "if")
+              (expr/parend (first (first options)))
+              (lit/raw "then")))
+          (expr/newlined
+            (expr/tabd (expr/semicolond (second (first options))))))
+        (drop 1 options))
+        (expr/newlined (expr/semicolond (lit/raw "end if"))))))
 
-(defn if-vhdl 
-  "If control structure, it can't be called just if, because if is a special form"
-  ([predicate then-clauses else-clauses] 
-   (expr/concated
-     (expr/newlined
-       (expr/space-sepd
-         (lit/raw "if")
-         (expr/parend predicate)
-         (lit/raw "then")))
-     (expr/tabd (apply c/do-statements then-clauses))
-     (expr/newlined (lit/raw "else"))
-     (expr/tabd (apply c/do-statements else-clauses))
-     (expr/semicolond (lit/raw "end if"))))
-  ([predicate then-clauses]
-   (expr/concated
-     (expr/newlined
-       (expr/space-sepd
-         (lit/raw "if")
-         (expr/parend predicate)
-         (lit/raw "then")))
-     (expr/tabd (apply c/do-statements then-clauses))
-     (expr/semicolond (lit/raw "end if")))))
-
-(comment 
-  (println 
-  (proto/to-str
-    (if-vhdl (lit/raw "foo = bar") [(lit/raw "something")] [(lit/raw "something else")])))
-  (println 
-  (proto/to-str
-    (if-vhdl (lit/raw "foo = bar") [(lit/raw "something")])))
-    )
+(comment
+  (println
+    (proto/to-str
+      (cond
+        (lit/raw "foo") (lit/raw "something")
+        (lit/raw "foo1") (lit/raw "something1")
+        (lit/raw "foo2") (lit/raw "something2")
+        :else  (lit/raw "something2")
+        )))
+)
