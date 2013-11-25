@@ -83,7 +83,7 @@
   (let [port-map (:port-map (eval cname))
         port-pairs (map #(let [[dst src] %] [(port-map dst) src])
           (partition 2 ports))]
-    `(design/component (name (gensym :CHIP)) ~(name cname) :ARCH ~@port-pairs)))
+    `(design/component (name (gensym "CHIP")) ~(name cname) :ARCH ~@port-pairs)))
 
 (comment
 
