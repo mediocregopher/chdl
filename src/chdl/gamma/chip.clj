@@ -40,7 +40,7 @@
   proto/alpha-item
   (to-str [this] (proto/to-str (:construct this))))
 
-( defmacro chip
+(defmacro chip
   "An instantiator for the definition of a new chip entity. This entity has
   input/output/inout signals, possible internal signals, ability to have
   multiple other chips embedded inside of it, processes, etc...
@@ -68,8 +68,8 @@
         ~(reduce #(assoc %1 `(quote ~(first %2)) (first %2)) {}
           (partition 2 port-bindings))
         (expr/concated
-          (apply design/entity '~cname (map gproto/construct (flatten ~port-syms)))
-          (design/architecture '~cname :ARCH
+          (apply design/entity ~cname (map gproto/construct (flatten ~port-syms)))
+          (design/architecture ~cname :ARCH
             (map gproto/construct (flatten ~internal-syms))
             (flatten ~body)))))))
 
