@@ -75,7 +75,7 @@
 
 (defmacro defchip
   [cname & args]
-  `(def ~cname (chip ~cname ~@args)))
+  `(def ~cname (chip '~cname ~@args)))
 
 (defmacro chip-inst
   "Used to instantiate a chip entity inside of another chip. You give it the
