@@ -50,7 +50,7 @@
 (def integer (decorate-type :INTEGER lit/num10))
 (def string (decorate-type :STRING lit/string))
 
-(defn std-uint 
+(defn std-uint
   ([size]
    ((decorate-type (str "UNSIGNED(" size " downto 0)") nil)))
   ([size uint]
@@ -97,7 +97,7 @@
 (def out-sig (partial dir-sig :OUT))
 (def inout-sig (partial dir-sig :INOUT))
 
-(comment 
+(comment
 
   ;; when we define a variable we get a chdl-symbol
   (def some-var
@@ -111,7 +111,7 @@
 
   ;;Examine the chdl construct with to-str
   (proto/to-str (gamma-proto/construct some-var))
-  
+
   ;; Now, whenever we use this chdl-symbol, the to-str function will return the name of the symbol
   (proto/to-str (variable (bit)))
 
