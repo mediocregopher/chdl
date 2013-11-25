@@ -46,7 +46,7 @@
 
 (def Ms (map
   #(signal (slog-vec 32 (vec-nth in-512 (* 32 %) (* 32 (inc %)))))
-  (range 0 32)))
+  (range 0 16)))
 
 (defn pass-maker [pass-number body]
   (let [cname
