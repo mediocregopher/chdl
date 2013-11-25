@@ -68,6 +68,12 @@
   [b]
     (to-str [_] (str "'" b "'")))
 
+(proto/defalpha-item slog
+  "Given either a 0 or 1 (as int or string) represents just that bit as a
+  std_logic"
+  [b]
+    (to-str [_] (str "std_logic('" b "')")))
+
 (proto/defalpha-item bit-vec
   "Given either a 0's or 1's (as a string) represents that bit vector"
   [b]

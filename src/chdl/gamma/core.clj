@@ -9,7 +9,7 @@
 
 (defn raw-bit-value? [value chdl-symbol]
   {:pre [(= :BIT (:type chdl-symbol))]}
-    (math/= chdl-symbol (lit/bit value)))
+    (math/v= chdl-symbol (lit/bit value)))
 
 (def high?
   (t/decorate-type
