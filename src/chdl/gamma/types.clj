@@ -50,7 +50,6 @@
 (def integer (decorate-type :INTEGER lit/num10))
 (def string (decorate-type :STRING lit/string))
 
-
 (defn std-uint 
   ([size]
    ((decorate-type (str "UNSIGNED(" size " downto 0)") nil)))
@@ -58,7 +57,7 @@
    ((decorate-type (str "UNSIGNED(" size " downto 0)") #(core/lit-uint->std-uint % size)) uint))) 
 
 (defn- vector-type [typ f size & default]
-  (let [typ (c/paren-call typ (c/downto (dec size) 0))]
+  (let [typ (proto/to-str (c/paren-call typ (c/downto (dec size) 0)))]
     (if (empty? default)
       (map->sym-construct {:size size :type typ :f f})
       (map->sym-construct-value
