@@ -18,7 +18,8 @@
   [func & args]
   (expr/concated
     (lit/auto-raw func)
-    (expr/parend (apply expr/comma-sepd args))))
+    (expr/parend (apply expr/comma-sepd
+      (map lit/auto-raw args)))))
 
 (defn paren-call-n
   [func & args]
