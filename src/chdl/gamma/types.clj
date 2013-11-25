@@ -6,6 +6,7 @@
             [chdl.beta.process :as proc]
             [chdl.alpha.expr :as expr]
             [chdl.alpha.proto :as proto]
+            [chdl.gamma.core :as core]
             [chdl.gamma.protocols :as gamma-proto]))
 
 (defrecord sym-construct 
@@ -48,6 +49,13 @@
 (def bool (decorate-type :BOOLEAN lit/bool))
 (def integer (decorate-type :INTEGER lit/num10))
 (def string (decorate-type :STRING lit/string))
+
+
+(defn std-uint 
+  ([size]
+   ((decorate-type (str "UNSIGNED(" size " downto 0)") nil)))
+  ([size uint]
+   ((decorate-type (str "UNSIGNED(" size " downto 0)") #(core/lit-uint->std-uint % size)) uint))) 
 
 (defn- vector-type [typ f size & default]
   (let [typ (c/paren-call typ (c/downto (dec size) 0))]
@@ -110,5 +118,7 @@
 
   (proto/to-str (c/sigcon :VARIABLE "foo" :BIT nil))
 
+  (proto/to-str (std-uint 32 4))
+  (:f (std-uint 32))
 
   )
