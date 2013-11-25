@@ -21,7 +21,7 @@
                  md5-hash (t/out-sig (t/slog-vec 128))]
          :internal [M (mapv (fn [_] (t/signal (t/std-uint 32))) (range 16))]
         (map-indexed
-          #(>! %2 (slog-vec->std-uint 32 (vec-nth message (* 32 %1) (* 32 (inc %1)))))
+          #(>! %2 (slog-vec->std-uint (vec-nth message (* 32 %1) (* 32 (inc %1)))))
           M))
 
 (comment
