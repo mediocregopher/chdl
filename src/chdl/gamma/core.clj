@@ -6,7 +6,8 @@
     [chdl.alpha.proto :as proto]
     [chdl.beta.math :as math]
     [chdl.beta.comp :as comp]
-    [chdl.gamma.types :as t]))
+    [chdl.gamma.types :as t]
+    [chdl.gamma.function :as cfn]))
 
 (defn raw-bit-value? [value chdl-symbol]
   {:pre [(= :BIT (:type chdl-symbol))]}
@@ -59,9 +60,35 @@
 (defn slog-vec->lit-int [v]
   (std-int->lit-int (slog-vec->std-int v)))
 
-(comment 
+
+(def int-range
+  (t/decorate-type
+    :INTEGER
+    (fn
+      ([count]
+       (comp/to 0 count))
+      ([start end]
+       (if (< end start)
+         (comp/downto start end)
+         (comp/to start end))))))
+
+(comment
 
   (require '[chdl.alpha.proto :as proto])
+  (require '[chdl.gamma.protocols :as gamma-proto])
+
+  (proto/to-str
+    (:value (int-range 3)))
+
+  (proto/to-str (int-range 3))
+  (def k (int-range 3))
+  (type k)
+  (proto/to-str k)
+  (gamma-proto/to-str (int-range 3))
+  (int-range)
+  (proto/to-str
+    (int-range 3))
+
   (def k (t/signal (t/bit 1)))
   (proto/to-str k)
   (lit/raw "'event")
