@@ -79,6 +79,11 @@
   [b]
     (to-str [_] (str "\"" b "\"")))
 
+(proto/defalpha-item slog-vec
+  "Given either a 0's or 1's (as a string) represents that std_logic_vector"
+  [b]
+    (to-str [_] (str "std_logic_vector(\"" b "\")")))
+
 (proto/defalpha-item bool
   "Given a boolean, represents that value"
   [v]

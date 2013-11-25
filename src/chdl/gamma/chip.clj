@@ -93,7 +93,7 @@
             ret (types/out-sig (types/bit))]
 
     :internal [tmp  (types/signal (types/bit 0))
-               tmp2 (types/signal (types/slog-vec 8))]
+               tmp2 (types/signal (types/slog-vec 8 "101010"))]
 
     (<! tmp (math/vxor a b))
     (<! (core/vec-nth tmp2 0 4) (types/bit-vec 4 "1111"))

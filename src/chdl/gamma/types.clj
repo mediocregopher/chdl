@@ -49,15 +49,15 @@
 (def integer (decorate-type :INTEGER lit/num10))
 (def string (decorate-type :STRING lit/string))
 
-(defn- vector-type [typ size & default]
-  (let [typ (c/paren-call typ (c/downto (dec size) 0))
-        f lit/bit-vec]
+(defn- vector-type [typ f size & default]
+  (let [typ (c/paren-call typ (c/downto (dec size) 0))]
     (if (empty? default)
-      (map->sym-construct {:type typ :f f})
-      (map->sym-construct-value {:type typ :f f :value (apply f default)}))))
+      (map->sym-construct {:size size :type typ :f f})
+      (map->sym-construct-value
+        {:size size :type typ :f f :value (apply f default)}))))
 
-(def bit-vec (partial vector-type :BIT_VECTOR))
-(def slog-vec (partial vector-type :STD_LOGIC_VECTOR))
+(def bit-vec (partial vector-type :BIT_VECTOR lit/bit-vec))
+(def slog-vec (partial vector-type :STD_LOGIC_VECTOR lit/slog-vec))
 
 (defn- gen-name [& n]
   (str (gensym
