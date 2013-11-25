@@ -75,14 +75,16 @@
 (comment
 
   (require '[chdl.alpha.proto :as proto])
-  (require '[chdl.gamma.protocols :as gamma-proto])
 
   (proto/to-str
     (:value (int-range 3)))
 
   (proto/to-str (int-range 3))
+  (:value (int-range 3))
+
   (def k (int-range 3))
   (type k)
+  (type (:value k))
   (proto/to-str k)
   (gamma-proto/to-str (int-range 3))
   (int-range)
