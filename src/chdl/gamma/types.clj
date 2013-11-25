@@ -21,7 +21,7 @@
   (to-str [this] (proto/to-str (:value this))))
 
 (defrecord chdl-symbol
-  [name type f value]
+  [name type construct value]
   gamma-proto/typed-construct
   gamma-proto/symbol-value
   proto/alpha-item
