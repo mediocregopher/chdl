@@ -58,24 +58,24 @@
     (>! tmp (math/vxor a b))
     (>! ret (math/vnot tmp)))"
   [& args]
-  (let [cname             (name (gensym "CHIP"))
-        m                 (chip-def->map args)
+  (let [m                 (chip-def->map args)
         port-bindings     (m :ports)
         internal-bindings (m :internal)
         bindings          (vec (concat port-bindings internal-bindings))
         port-syms         (vec (take-nth 2 port-bindings))
         internal-syms     (vec (take-nth 2 internal-bindings))
         body              (m :body)]
-    `(let ~bindings
-      (->chip-rec
-        ~cname
-        ~(reduce #(assoc %1 `(quote ~(first %2)) (first %2)) {}
-          (partition 2 port-bindings))
-        (expr/concated
-          (apply design/entity ~cname (map gproto/construct (flatten ~port-syms)))
-          (design/architecture ~cname :ARCH
-            (map gproto/construct (flatten ~internal-syms))
-            (flatten ~body)))))))
+    `(let [cname# (name (gensym "CHIP"))]
+      (let ~bindings
+        (->chip-rec
+          cname#
+          ~(reduce #(assoc %1 `(quote ~(first %2)) (first %2)) {}
+            (partition 2 port-bindings))
+          (expr/concated
+            (apply design/entity cname# (map gproto/construct (flatten ~port-syms)))
+            (design/architecture cname# :ARCH
+              (map gproto/construct (flatten ~internal-syms))
+              (flatten ~body))))))))
 
 (defmacro defchip
   [cname & args]
