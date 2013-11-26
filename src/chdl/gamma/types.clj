@@ -52,9 +52,10 @@
 
 (defn std-uint
   ([size]
-   ((decorate-type (str "UNSIGNED(" size " downto 0)") nil)))
+   ((decorate-type (str "UNSIGNED(" (dec size) " downto 0)") nil)))
   ([size uint]
-   ((decorate-type (str "UNSIGNED(" size " downto 0)") #(nconv/lit-uint->std-uint % size)) uint))) 
+   ((decorate-type (str "UNSIGNED(" (dec size) " downto 0)")
+    #(nconv/lit-uint->std-uint % size)) uint)))
 
 (defn- vector-type [typ f size & default]
   (let [typ (proto/to-str (c/paren-call typ (c/downto (dec size) 0)))]
