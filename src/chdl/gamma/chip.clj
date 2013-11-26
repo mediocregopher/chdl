@@ -85,12 +85,15 @@
   "Used to instantiate a chip entity inside of another chip. You give it the
   name of the chip entity and any port pairs that need to be hooked up"
   [ch ports]
-  (let [ech (eval ch)
-        port-map (:port-map ech)
-        port-pairs (map #(let [[dst src] %] [(port-map dst) src])
-          (partition 2 ports))
-        cname (gproto/sym-name ech)]
-    `(design/component (name (gensym "CHIP")) ~cname :ARCH ~@port-pairs)))
+  (let [quoted-ports (map (fn [[dst src]] [`(quote ~dst) src])
+                          (partition 2 ports))]
+    `(let [port-map#   (:port-map ~ch)
+           cname#      (gproto/sym-name ~ch)
+           cinstname#  (name (gensym "CHIP_INST"))
+           port-pairs# (map
+                          (fn [[dst# src#]] [(port-map# dst#) src#])
+                          (list ~@quoted-ports))]
+      (apply design/component cinstname# cname# :ARCH port-pairs#))))
 
 (comment
 
