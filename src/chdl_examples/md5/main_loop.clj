@@ -6,7 +6,8 @@
            [chdl.gamma.types :refer :all]
            [chdl.gamma.chip :refer :all]
            [chdl.gamma.num-conv :refer :all]
-           [chdl.gamma.protocols :as gproto]))
+           [chdl.gamma.protocols :as gproto]
+           [chdl.gamma.render :as render]))
 
 
 
@@ -126,5 +127,5 @@
 (comment
   (println (gproto/construct chunk-hasher-chip))
   (println (gproto/construct (first pass-chips)))
-  (spit "/tmp/wat" (apply str (map gproto/construct pass-chips)))
+  (render/vhdl-file "/tmp/md5.vhdl"  pass-chips chunk-hasher-chip)
 )
