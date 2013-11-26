@@ -38,7 +38,10 @@
 (defrecord chip-rec
   [cname port-map construct]
   proto/alpha-item
-  (to-str [this] (proto/to-str (:construct this))))
+  gproto/symbol-value
+  (to-str [this] cname)
+  (sym-name [this] cname)
+  (construct [this] (proto/to-str (:construct this))))
 
 (defmacro chip
   "An instantiator for the definition of a new chip entity. This entity has
@@ -46,16 +49,17 @@
   multiple other chips embedded inside of it, processes, etc...
 
   Example:
-  (chip wat
+  (chip
     :ports    [a   (types/in-sig (types/bit))
                b   (types/in-sig (types/bit 0))
                ret (types/out-sig (types/bit))]
     :internal [tmp (types/signal (types/bit 0))]
 
-    (>! tmp (math/xor a b))
-    (>! ret (math/not tmp)))"
-  [cname & args]
-  (let [m                 (chip-def->map args)
+    (>! tmp (math/vxor a b))
+    (>! ret (math/vnot tmp)))"
+  [& args]
+  (let [cname             (name (gensym "CHIP"))
+        m                 (chip-def->map args)
         port-bindings     (m :ports)
         internal-bindings (m :internal)
         bindings          (vec (concat port-bindings internal-bindings))
@@ -75,16 +79,18 @@
 
 (defmacro defchip
   [cname & args]
-  `(def ~cname (chip '~cname ~@args)))
+  `(def ~cname (chip ~@args)))
 
 (defmacro chip-inst
   "Used to instantiate a chip entity inside of another chip. You give it the
   name of the chip entity and any port pairs that need to be hooked up"
-  [cname ports]
-  (let [port-map (:port-map (eval cname))
+  [ch ports]
+  (let [ech (eval ch)
+        port-map (:port-map ech)
         port-pairs (map #(let [[dst src] %] [(port-map dst) src])
-          (partition 2 ports))]
-    `(design/component (name (gensym "CHIP")) ~(name cname) :ARCH ~@port-pairs)))
+          (partition 2 ports))
+        cname (gproto/sym-name ech)]
+    `(design/component (name (gensym "CHIP")) ~cname :ARCH ~@port-pairs)))
 
 (comment
 
@@ -101,10 +107,10 @@
     (>! (core/vec-nth tmp2 4 8) (core/vec-nth tmp2 0 4))
     (>! ret (math/vnot tmp)))
 
-  (println (proto/to-str wat))
+  (println (gproto/construct wat))
 
-  (println (proto/to-str
-    (chip wut
+  (println (gproto/construct
+    (chip
       :ports [c (types/in-sig (types/bit))
               d (types/in-sig (types/bit))]
 
