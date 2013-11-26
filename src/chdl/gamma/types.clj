@@ -6,7 +6,7 @@
             [chdl.beta.process :as proc]
             [chdl.alpha.expr :as expr]
             [chdl.alpha.proto :as proto]
-            [chdl.gamma.core :as core]
+            [chdl.gamma.num-conv :as nconv]
             [chdl.gamma.protocols :as gamma-proto]))
 
 (defrecord sym-construct 
@@ -54,7 +54,7 @@
   ([size]
    ((decorate-type (str "UNSIGNED(" size " downto 0)") nil)))
   ([size uint]
-   ((decorate-type (str "UNSIGNED(" size " downto 0)") #(core/lit-uint->std-uint % size)) uint))) 
+   ((decorate-type (str "UNSIGNED(" size " downto 0)") #(nconv/lit-uint->std-uint % size)) uint))) 
 
 (defn- vector-type [typ f size & default]
   (let [typ (proto/to-str (c/paren-call typ (c/downto (dec size) 0)))]
