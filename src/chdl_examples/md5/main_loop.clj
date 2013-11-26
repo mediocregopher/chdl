@@ -5,6 +5,8 @@
            [chdl.gamma.function :as function :refer :all]
            [chdl.gamma.types :as t :refer :all]
            [chdl.gamma.chip :as chip :refer :all]
+           [chdl.gamma.num-conv :refer :all]
+           [chdl.gamma.protocols :as gproto]
            [chdl.beta.control :as control]
            [chdl.alpha.proto :as proto]))
 
@@ -44,19 +46,15 @@
 (def std-7 (lit-uint->std-uint 7 32))
 (def std-16 (lit-uint->std-uint 16 32))
 
-(def Ms (map
-  #(signal (slog-vec 32 (vec-nth in-512 (* 32 %) (* 32 (inc %)))))
-  (range 0 16)))
-
 (defn g-maker [i]
   (cond
     (> 16 i) i
-    (> 32 i) (vmod (v+ (v* std-5 (lit-uint->std-uint i 32)) std-1) std-16)
-    (> 48 i) (vmod (v+ (v* std-3 (lit-uint->std-uint i 32)) std-5) std-16)
-    (> 64 i) (vmod (v* std-7 (lit-uint->std-uint i 32)) std-16)))
+    (> 32 i) (mod (+ (* 5 i) 1) 16)
+    (> 48 i) (mod (+ (* 3 i) 5) 16)
+    (> 64 i) (mod (* 7 i) 16)))
 
-(defn leftrotate [A F M i] ;i is a clojure int, not a chdl symbol
-  (vrol (v+ A F (K i) (vec-nth M (g-maker i))) (s i)))
+(defn leftrotate [A F Mg i] ;i is a clojure int, not a chdl symbol
+  (vrol (v+ A F (K i) Mg) (s i)))
 
 (defn F-maker [B C D i]
   (cond
@@ -65,17 +63,13 @@
     (> 48 i) (vxor B (vxor C D))
     (> 64 i) (vxor C (vor B (vnot D)))))
 
-
 (defn pass-maker [pass-number]
-  (let [cname
-         (gensym (str "chip_" pass-number "_"))]
     (chip/chip
-      cname
       :ports  [A (t/in-sig (t/std-uint 32))
                B (t/in-sig (t/std-uint 32))
                C (t/in-sig (t/std-uint 32))
                D (t/in-sig (t/std-uint 32))
-               M (t/in-sig (t/slog-vec 32))
+               Mg (t/in-sig (t/std-uint 32))
                Ao (t/out-sig (t/std-uint 32))
                Bo (t/out-sig (t/std-uint 32))
                Co (t/out-sig (t/std-uint 32))
@@ -84,71 +78,55 @@
       (>! dTemp D)
       (>! Do C)
       (>! Co B)
-      (>! Bo (v+ B (leftrotate A (F-maker B C D pass-number) M pass-number)))
-      (>! dTemp D))))
+      (>! Bo (v+ B (leftrotate A (F-maker B C D pass-number) Mg pass-number)))
+      (>! dTemp D)))
 
-(def chips (map pass-maker (range 64)))
+(def pass-chips (map pass-maker (range 64)))
+
+(defn pass-input [Sin Ss i]
+  (if (zero? i) Sin (Ss i)))
+
+(defn pass-output [Sout Ss i]
+  (if (= 63 i) Sout (Ss (inc i))))
+
+(defchip chunk-hasher-chip
+      :ports [Ain      (t/in-sig (t/std-uint 32))
+              Bin      (t/in-sig (t/std-uint 32))
+              Cin      (t/in-sig (t/std-uint 32))
+              Din      (t/in-sig (t/std-uint 32))
+              message  (t/in-sig (t/slog-vec 512))
+              Aout     (t/out-sig (t/std-uint 32))
+              Bout     (t/out-sig (t/std-uint 32))
+              Cout     (t/out-sig (t/std-uint 32))
+              Dout     (t/out-sig (t/std-uint 32))]
+
+      :internal [;breaking up the message
+                 M (mapv (fn [_] (t/signal (t/std-uint 32))) (range 16))
+                 ;Making the glue
+                 As (mapv (fn [_] (t/signal (t/std-uint 32))) (range 64))
+                 Bs (mapv (fn [_] (t/signal (t/std-uint 32))) (range 64))
+                 Cs (mapv (fn [_] (t/signal (t/std-uint 32))) (range 64))
+                 Ds (mapv (fn [_] (t/signal (t/std-uint 32))) (range 64))]
+
+      (map-indexed
+        #(>! %2 (slog-vec->std-uint
+          (vec-nth message (* 32 %1) (* 32 (inc %1))))) M)
+
+      (map-indexed
+        #(chip-inst %2 [A (pass-input Ain As %1)
+                        B (pass-input Bin Bs %1)
+                        C (pass-input Cin Cs %1)
+                        D (pass-input Din Ds %1)
+                        Mg (M (g-maker %1))
+                        Ao (pass-output Aout As %1)
+                        Bo (pass-output Bout Bs %1)
+                        Co (pass-output Cout Cs %1)
+                        Do (pass-output Dout Ds %1)])
+        pass-chips)
+)
 
 (comment
-
-  (println (proto/to-str (first chips)))
-
-  (F-maker 1)
-  (pass-body)
-
-  (pp/pprint
-    (macroexpand-1 (pass-maker 0 (pass-body 0))))
-  (require '[chdl.alpha.literal :as lit])
-
-  (println
-    (proto/to-str (pass-maker 1))) 
-
-
-  (require '[clojure.pprint :as pp])
-
-  (defn foo-test2 [A]
-    (v+ A 3) )
-
-  (defn foo-test [A]
-    (v+ (v+ A 3) (foo-test2 A)) )
-
-  (println 
-    (proto/to-str 
-      (chip/chip
-        "asdf"
-        :ports [a (t/in-sig (t/std-uint 32))]
-        (foo-test a))))
-
-  (pp/pprint (pass-maker 0 (pass-body 0)))
-  (pass-maker 0 (pass-body 0))
-  (pass-body 0)
-  (:construct (t/in-sig (t/std-uint 32)))
-  ( pass-body 0 )
-
-  )
-
-
-(comment
-
-
-  (macroexpand-1 '(pass-maker 1 "1234444") )
-
-  (clojure.pprint/pprint 
-    (pass-body 1))
-
-  (proto/to-str (t/slog-vec 4 "1"))
-  (:type (t/slog-vec 4 "1"))
-  (:type (t/slog-vec 4)) 
-  (:type (t/bit))
-  (require 'clojure.pprint)
-  (clojure.pprint/pprint
-  ;(for i (range 63))
-  (pass-maker i "1234" `[:foo :bar (~(F i) B C D)]))
-
-
-  (map #(apply chip/chip) [
-                           ['wat
-                            :ports [a (t/in-sig (t/bit))
-                                      out (t/out-sig (t/bit))]
-                            '(lit/raw "asdf")]])
+  (println (gproto/construct chunk-hasher-chip))
+  (println (gproto/construct (first pass-chips)))
+  (spit "/tmp/wat" (apply str (map gproto/construct pass-chips)))
 )
