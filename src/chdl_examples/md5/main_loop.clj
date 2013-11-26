@@ -2,13 +2,11 @@
   "the main loop for the md5 function"
   (require [chdl.gamma.core :as core :refer :all]
            [chdl.beta.math :refer :all]
-           [chdl.gamma.function :as function :refer :all]
-           [chdl.gamma.types :as t :refer :all]
-           [chdl.gamma.chip :as chip :refer :all]
+           [chdl.gamma.function :refer :all]
+           [chdl.gamma.types :refer :all]
+           [chdl.gamma.chip :refer :all]
            [chdl.gamma.num-conv :refer :all]
-           [chdl.gamma.protocols :as gproto]
-           [chdl.beta.control :as control]
-           [chdl.alpha.proto :as proto]))
+           [chdl.gamma.protocols :as gproto]))
 
 
 
