@@ -3,7 +3,7 @@
   (require [chdl.gamma.core :as core :refer :all]
            [chdl.beta.math :refer :all]
            [chdl.gamma.function :refer :all]
-           [chdl.gamma.types :refer :all]
+           [chdl.gamma.types :refer :all :as t]
            [chdl.gamma.chip :refer :all]
            [chdl.gamma.num-conv :refer :all]
            [chdl.gamma.protocols :as gproto]
@@ -63,7 +63,7 @@
     (> 64 i) (vxor C (vor B (vnot D)))))
 
 (defn pass-maker [pass-number]
-    (chip/chip
+    (chip
       :ports  [A (t/in-sig (t/std-uint 32))
                B (t/in-sig (t/std-uint 32))
                C (t/in-sig (t/std-uint 32))
