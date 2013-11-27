@@ -127,5 +127,5 @@
 (comment
   (println (gproto/construct chunk-hasher-chip))
   (println (gproto/construct (first pass-chips)))
-  (render/vhdl-file "/tmp/md5.vhdl"  pass-chips chunk-hasher-chip)
+  (render/vhdl-file "src/chdl_examples/md5/md5.vhd"  pass-chips chunk-hasher-chip)
 )
